@@ -1,5 +1,6 @@
 package com.disertatie.rent.car.entities;
 
+import com.disertatie.rent.car.model.enumType.UserRoleEnum;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,19 +30,24 @@ public class User {
     @Column(name = "email")
     private String email;
 
-    @
     @Column(name = "password")
     private String password;
 
-    @Column(name = "telefon")
-    private String telefon;
+    @Column(name = "phone")
+    private String phone;
 
-    @Column(name = "adresa")
-    private String adresa;
+    @Column(name = "address")
+    private String address;
 
-    @Column(name = "idcard")
-    private int idcard;
+    @Column(name = "photo")
+    private byte[] photo;
 
-    @Column(name = "puncte")
-    private String puncte;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private UserRoleEnum userRole;
+
+    //todo card id
+
+    public User() {
+    }
 }
