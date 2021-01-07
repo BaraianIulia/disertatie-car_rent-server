@@ -12,7 +12,6 @@ public class UserModel {
     private String password;
     private String phone;
     private String address;
-    private byte[] fileToUpload;
     private String userRole;
     private String photo;
 
@@ -81,14 +80,6 @@ public class UserModel {
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public byte[] getFileToUpload() {
-        return fileToUpload;
-    }
-
-    public void setFileToUpload(byte[] fileToUpload) {
-        this.fileToUpload = fileToUpload;
     }
 
     public String getUserRole() {
