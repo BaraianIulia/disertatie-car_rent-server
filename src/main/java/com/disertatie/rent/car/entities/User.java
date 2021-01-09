@@ -46,6 +46,9 @@ public class User {
     @Column(name = "role")
     private UserRoleEnum userRole;
 
+    @Column(name = "status")
+    private boolean status;
+
     //todo card id
 
     public User() {

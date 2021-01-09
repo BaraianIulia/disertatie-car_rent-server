@@ -17,21 +17,40 @@ public class Transformer {
 
     public User transformModelToEntity(UserModel userModel) {
         User user = new User();
-        if (null != userModel.getId())
+        if (null != userModel.getId()) {
             user.setId(userModel.getId());
-        user.setName(userModel.getName());
-        user.setSurname(userModel.getSurname());
-        user.setBirthdate(java.sql.Date.valueOf(userModel.getBirthdate()));
-        user.setEmail(userModel.getEmail());
-        user.setPassword(passwordEncoder.encoder(userModel.getPassword()));
-        user.setPhone(userModel.getPhone());
-        user.setAddress(userModel.getAddress());
-        user.setPhoto(userModel.getPhoto().getBytes());
+        }
+        if (userModel.getBirthdate() != null) {
+            user.setName(userModel.getName());
+        }
+        if (userModel.getBirthdate() != null) {
+            user.setSurname(userModel.getSurname());
+        }
+        if (userModel.getBirthdate() != null) {
+            user.setBirthdate(java.sql.Date.valueOf(userModel.getBirthdate()));
+        }
+        if (userModel.getEmail() != null) {
+            user.setEmail(userModel.getEmail());
+        }
+        // user.setPassword(passwordEncoder.encoder(userModel.getPassword()));
+        if (userModel.getPassword() != null) {
+            user.setPassword(userModel.getPassword());
+        }
+        if (userModel.getPhone() != null) {
+            user.setPhone(userModel.getPhone());
+        }
+        if (userModel.getAddress() != null) {
+            user.setAddress(userModel.getAddress());
+        }
+        if (userModel.getPhoto() != null) {
+            user.setPhoto(userModel.getPhoto().getBytes());
+        }
         if (userModel.getUserRole().toLowerCase().contains("user")) {
             user.setUserRole(UserRoleEnum.USER_ROLE);
         } else if (userModel.getUserRole().toLowerCase().contains("admin")) {
             user.setUserRole(UserRoleEnum.ADMIN_ROLE);
         }
+        user.setStatus(userModel.isStatus());
 
         return user;
     }
@@ -45,8 +64,11 @@ public class Transformer {
         userModel.setEmail(user.getEmail());
         userModel.setPhone(user.getPhone());
         userModel.setAddress(user.getAddress());
-        userModel.setPhoto(new String(user.getPhoto(), StandardCharsets.UTF_8));
+        if (user.getPhoto() != null) {
+            userModel.setPhoto(new String(user.getPhoto(), StandardCharsets.UTF_8));
+        }
         userModel.setUserRole(user.getUserRole().toString());
+        userModel.setStatus(user.isStatus());
 
         return userModel;
 

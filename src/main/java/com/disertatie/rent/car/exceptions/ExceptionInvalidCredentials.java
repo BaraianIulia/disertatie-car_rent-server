@@ -1,11 +1,11 @@
 package com.disertatie.rent.car.exceptions;
 
-public class ExceptionInvalidLoginCredentials extends Exception {
+public class ExceptionInvalidCredentials extends Exception {
     private static final long serialVersionUID = -3712981290802922344L;
 
     private String message;
 
-    public ExceptionInvalidLoginCredentials(String message) {
+    public ExceptionInvalidCredentials(String message) {
         super();
         this.message = message;
     }

@@ -22,10 +22,20 @@ public class ExceptionHandlerController {
         return error;
     }
 
-    @ExceptionHandler(ExceptionInvalidLoginCredentials.class)
+    @ExceptionHandler(ExceptionInvalidCredentials.class)
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
     public @ResponseBody
-    ExceptionResponse handleIncorrectInput(final ExceptionInvalidLoginCredentials exception, final HttpServletRequest request) {
+    ExceptionResponse handleIncorrectInput(final ExceptionInvalidCredentials exception, final HttpServletRequest request) {
+        ExceptionResponse error = new ExceptionResponse();
+        error.setMessage(exception.getMessage());
+        error.setRequestedURI(request.getRequestURI());
+        return error;
+    }
+
+    @ExceptionHandler(ExceptionUnauthorizedAction.class)
+    @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+    public @ResponseBody
+    ExceptionResponse handleIncorrectInput(final ExceptionUnauthorizedAction exception, final HttpServletRequest request) {
         ExceptionResponse error = new ExceptionResponse();
         error.setMessage(exception.getMessage());
         error.setRequestedURI(request.getRequestURI());

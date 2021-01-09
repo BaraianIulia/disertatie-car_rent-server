@@ -14,6 +14,7 @@ public class UserModel {
     private String address;
     private String userRole;
     private String photo;
+    private boolean status;
 
     public UserModel() {
     }
@@ -96,5 +97,13 @@ public class UserModel {
 
     public void setPhoto(String photo) {
         this.photo = photo;
+    }
+
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
     }
 }
