@@ -17,7 +17,6 @@ public interface UserService {
 
     void register(UserModel userModel) throws ExceptionExistingUser;
 
-
     UserModel changeRole(Long userId, UserRoleEnum userRole, Long currentUserId) throws ExceptionNotFound, ExceptionUnauthorizedAction;
 
     UserModel changeStatus(Long userId, boolean status, Long currentUserId) throws ExceptionNotFound, ExceptionUnauthorizedAction;
@@ -25,4 +24,6 @@ public interface UserService {
     UserModel editProfileData(UserModel userModel) throws ExceptionNotFound;
 
     void changePassword(Long userId, String actualPassword, String newPassword) throws ExceptionInvalidCredentials, ExceptionNotFound;
+
+    UserModel getUserById(Long userId) throws ExceptionNotFound;
 }

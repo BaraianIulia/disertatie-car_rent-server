@@ -32,9 +32,9 @@ public class Transformer {
         if (userModel.getEmail() != null) {
             user.setEmail(userModel.getEmail());
         }
-        // user.setPassword(passwordEncoder.encoder(userModel.getPassword()));
+
         if (userModel.getPassword() != null) {
-            user.setPassword(userModel.getPassword());
+            user.setPassword(passwordEncoder.encoder(userModel.getPassword()));
         }
         if (userModel.getPhone() != null) {
             user.setPhone(userModel.getPhone());

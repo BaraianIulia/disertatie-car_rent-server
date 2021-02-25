@@ -49,8 +49,7 @@ public class UserServiceImp implements UserService {
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            // if (passwordEncoder.check(user.getPassword())) {
-            if (user.getPassword().equals(password)) {
+             if (passwordEncoder.check(password, user.getPassword())) {
                 return transformer.transformEntityToModel(user);
             } else {
                 throw new ExceptionInvalidCredentials("Incorrect email or password;");
@@ -131,12 +130,21 @@ public class UserServiceImp implements UserService {
             throw new ExceptionNotFound("User with id: " + userId + " does not exist.");
         }
         User user = optionalUser.get();
-        if (user.getPassword().equals(actualPassword)) {
+        if (passwordEncoder.check(actualPassword, user.getPassword())) {
             user.setPassword(newPassword);
             userRepository.save(user);
         }else {
             throw new ExceptionInvalidCredentials("The current password does not match.");
         }
+    }
+
+    @Override
+    public UserModel getUserById(Long userId) throws ExceptionNotFound {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (!optionalUser.isPresent()) {
+            throw new ExceptionNotFound("User with id: " + userId + " does not exist.");
+        }
+        return transformer.transformEntityToModel(optionalUser.get());
     }
 
 }

@@ -11,8 +11,8 @@ public class PasswordEncoder {
         return passwordEncoder.encode(password);
     }
 
-    public boolean check(String password) {
+    public boolean check(String passwordUser, String passwordDb) {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        return encoder.matches(password, password);
+        return encoder.matches(passwordUser, passwordDb);
     }
 }

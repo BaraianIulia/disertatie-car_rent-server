@@ -72,4 +72,12 @@ public class UserController {
         userService.changePassword(userId,actualPassword, newPassword);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping(path = "/user")
+    public ResponseEntity getUserById(@RequestParam(value = "userId") Long userId) throws ExceptionNotFound {
+        LOGGER.info("UserController : getUserById " + userId);
+        return ResponseEntity.ok().body( userService.getUserById(userId));
+    }
+
 }
+
