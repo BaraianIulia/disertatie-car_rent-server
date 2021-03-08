@@ -1,6 +1,6 @@
 package com.disertatie.rent.car.entities;
 
-import com.disertatie.rent.car.model.enumType.UserRoleEnum;
+import com.disertatie.rent.car.model.enumType.UserRoleType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -40,11 +40,12 @@ public class User {
     private String address;
 
     @Column(name = "photo")
+    @Lob
     private byte[] photo;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
-    private UserRoleEnum userRole;
+    private UserRoleType userRole;
 
     @Column(name = "status")
     private boolean status;

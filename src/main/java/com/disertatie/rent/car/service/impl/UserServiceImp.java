@@ -1,18 +1,16 @@
 package com.disertatie.rent.car.service.impl;
 
 import com.disertatie.rent.car.entities.User;
-import com.disertatie.rent.car.exceptions.ExceptionExistingUser;
-import com.disertatie.rent.car.exceptions.ExceptionInvalidCredentials;
-import com.disertatie.rent.car.exceptions.ExceptionNotFound;
-import com.disertatie.rent.car.exceptions.ExceptionUnauthorizedAction;
+import com.disertatie.rent.car.exceptions.*;
 import com.disertatie.rent.car.model.UserModel;
-import com.disertatie.rent.car.model.enumType.UserRoleEnum;
+import com.disertatie.rent.car.model.enumType.UserRoleType;
 import com.disertatie.rent.car.repository.UserRepository;
 import com.disertatie.rent.car.service.UserService;
 import com.disertatie.rent.car.service.passwordEncoder.PasswordEncoder;
 import com.disertatie.rent.car.transformers.Transformer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -45,14 +43,17 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public UserModel login(String email, String password) throws ExceptionInvalidCredentials, ExceptionNotFound {
+    public UserModel login(String email, String password) throws ExceptionInvalidCredentials, ExceptionNotFound, ExceptionDeactivatedAccount {
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
              if (passwordEncoder.check(password, user.getPassword())) {
+                 if(user.isStatus() == false){
+                     throw new ExceptionDeactivatedAccount("This account is deactivated.");
+                 }
                 return transformer.transformEntityToModel(user);
             } else {
-                throw new ExceptionInvalidCredentials("Incorrect email or password;");
+                throw new ExceptionInvalidCredentials("Incorrect email or password.");
             }
         } else {
             throw new ExceptionNotFound("User with email: " + email + " not found.");
@@ -70,11 +71,11 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public UserModel changeRole(Long userId, UserRoleEnum userRole, Long currentUserId) throws ExceptionNotFound, ExceptionUnauthorizedAction {
+    public UserModel changeRole(Long userId, UserRoleType userRole, Long currentUserId) throws ExceptionNotFound, ExceptionUnauthorizedAction {
         Optional<User> optionalUser = userRepository.findById(currentUserId);
         if (!optionalUser.isPresent()) {
             throw new ExceptionNotFound("User with id: " + currentUserId + " does not exist.");
-        } else if (optionalUser.get().getUserRole().equals(UserRoleEnum.ADMIN_ROLE)) {
+        } else if (optionalUser.get().getUserRole().equals(UserRoleType.ADMIN_ROLE)) {
             Optional<User> optionalUserToChange = userRepository.findById(userId);
             if (!optionalUserToChange.isPresent()) {
                 throw new ExceptionNotFound("User with id: " + currentUserId + " does not exist.");
@@ -93,7 +94,7 @@ public class UserServiceImp implements UserService {
         Optional<User> optionalUser = userRepository.findById(currentUserId);
         if (!optionalUser.isPresent()) {
             throw new ExceptionNotFound("User with id: " + currentUserId + " does not exist.");
-        } else if (optionalUser.get().getUserRole().equals(UserRoleEnum.ADMIN_ROLE)) {
+        } else if (optionalUser.get().getUserRole().equals(UserRoleType.ADMIN_ROLE)) {
             Optional<User> optionalUserToChange = userRepository.findById(userId);
             if (!optionalUserToChange.isPresent()) {
                 throw new ExceptionNotFound("User with id: " + currentUserId + " does not exist.");
@@ -131,7 +132,7 @@ public class UserServiceImp implements UserService {
         }
         User user = optionalUser.get();
         if (passwordEncoder.check(actualPassword, user.getPassword())) {
-            user.setPassword(newPassword);
+            user.setPassword(passwordEncoder.encoder(newPassword));
             userRepository.save(user);
         }else {
             throw new ExceptionInvalidCredentials("The current password does not match.");
@@ -145,6 +146,21 @@ public class UserServiceImp implements UserService {
             throw new ExceptionNotFound("User with id: " + userId + " does not exist.");
         }
         return transformer.transformEntityToModel(optionalUser.get());
+    }
+
+    @Override
+    public void changeProfilePicture(Long userId, String photo) throws ExceptionNotFound, ExceptionInvalidData {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (!optionalUser.isPresent()) {
+            throw new ExceptionNotFound("User with id: " + userId + " does not exist.");
+        }
+        User user = optionalUser.get();
+        if (!StringUtils.isEmpty(photo)) {
+            user.setPhoto(photo.getBytes());
+            userRepository.save(user);
+        }else{
+            throw new ExceptionInvalidData("You can not set an empty picture.");
+        }
     }
 
 }

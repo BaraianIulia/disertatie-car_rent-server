@@ -1,11 +1,11 @@
 package com.disertatie.rent.car.exceptions;
 
-public class ExceptionExistingUser extends Exception {
+public class ExceptionInvalidData extends Throwable {
     private static final long serialVersionUID = -3712981290802922344L;
 
     private String message;
 
-    public ExceptionExistingUser(String message) {
+    public ExceptionInvalidData(String message) {
         super();
         this.message = message;
     }
@@ -19,5 +19,3 @@ public class ExceptionExistingUser extends Exception {
         this.message = message;
     }
 }
-
-

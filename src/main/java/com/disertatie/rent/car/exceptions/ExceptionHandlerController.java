@@ -25,7 +25,7 @@ public class ExceptionHandlerController {
     @ExceptionHandler(ExceptionInvalidCredentials.class)
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
     public @ResponseBody
-    ExceptionResponse handleIncorrectInput(final ExceptionInvalidCredentials exception, final HttpServletRequest request) {
+    ExceptionResponse handleInvalidCredentials(final ExceptionInvalidCredentials exception, final HttpServletRequest request) {
         ExceptionResponse error = new ExceptionResponse();
         error.setMessage(exception.getMessage());
         error.setRequestedURI(request.getRequestURI());
@@ -35,7 +35,47 @@ public class ExceptionHandlerController {
     @ExceptionHandler(ExceptionUnauthorizedAction.class)
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
     public @ResponseBody
-    ExceptionResponse handleIncorrectInput(final ExceptionUnauthorizedAction exception, final HttpServletRequest request) {
+    ExceptionResponse handleUnauthorizedAction(final ExceptionUnauthorizedAction exception, final HttpServletRequest request) {
+        ExceptionResponse error = new ExceptionResponse();
+        error.setMessage(exception.getMessage());
+        error.setRequestedURI(request.getRequestURI());
+        return error;
+    }
+
+    @ExceptionHandler(ExceptionExistingUser.class)
+    @ResponseStatus(value = HttpStatus.CONFLICT)
+    public @ResponseBody
+    ExceptionResponse handleExistingUser(final ExceptionExistingUser exception, final HttpServletRequest request) {
+        ExceptionResponse error = new ExceptionResponse();
+        error.setMessage(exception.getMessage());
+        error.setRequestedURI(request.getRequestURI());
+        return error;
+    }
+
+    @ExceptionHandler(ExceptionExistingCar.class)
+    @ResponseStatus(value = HttpStatus.CONFLICT)
+    public @ResponseBody
+    ExceptionResponse handleExistingCar(final ExceptionExistingCar exception, final HttpServletRequest request) {
+        ExceptionResponse error = new ExceptionResponse();
+        error.setMessage(exception.getMessage());
+        error.setRequestedURI(request.getRequestURI());
+        return error;
+    }
+
+    @ExceptionHandler(ExceptionDeactivatedAccount.class)
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    public @ResponseBody
+    ExceptionResponse handleExceptionDeactivatedAccount(final ExceptionNotFound exception, final HttpServletRequest request) {
+        ExceptionResponse error = new ExceptionResponse();
+        error.setMessage(exception.getMessage());
+        error.setRequestedURI(request.getRequestURI());
+        return error;
+    }
+
+    @ExceptionHandler(ExceptionInvalidData.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public @ResponseBody
+    ExceptionResponse handleExceptionInvalidData(final ExceptionNotFound exception, final HttpServletRequest request) {
         ExceptionResponse error = new ExceptionResponse();
         error.setMessage(exception.getMessage());
         error.setRequestedURI(request.getRequestURI());

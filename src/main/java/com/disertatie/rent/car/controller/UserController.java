@@ -1,11 +1,8 @@
 package com.disertatie.rent.car.controller;
 
-import com.disertatie.rent.car.exceptions.ExceptionExistingUser;
-import com.disertatie.rent.car.exceptions.ExceptionInvalidCredentials;
-import com.disertatie.rent.car.exceptions.ExceptionNotFound;
-import com.disertatie.rent.car.exceptions.ExceptionUnauthorizedAction;
+import com.disertatie.rent.car.exceptions.*;
 import com.disertatie.rent.car.model.UserModel;
-import com.disertatie.rent.car.model.enumType.UserRoleEnum;
+import com.disertatie.rent.car.model.enumType.UserRoleType;
 import com.disertatie.rent.car.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +27,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/login", produces = "application/json")
-    public ResponseEntity<UserModel> login(@RequestParam(value = "email") String email, @RequestParam(value = "password") String password) throws ExceptionInvalidCredentials, ExceptionNotFound {
+    public ResponseEntity<UserModel> login(@RequestParam(value = "email") String email, @RequestParam(value = "password") String password) throws ExceptionInvalidCredentials, ExceptionNotFound, ExceptionDeactivatedAccount {
         LOGGER.info("UserController : login(" + email + " " + password + ")");
         return ResponseEntity.ok().body(userService.login(email, password));
     }
@@ -46,9 +43,9 @@ public class UserController {
     @PostMapping(path = "/role")
     public ResponseEntity<UserModel> changeRole(@RequestParam(value = "userId") Long userId, @RequestParam(value = "userRole") String userRole, @RequestParam(value = "currentUserId") Long currentUserId) throws ExceptionUnauthorizedAction, ExceptionNotFound {
         if (userRole.toLowerCase().contains("admin")) {
-            return ResponseEntity.ok().body(userService.changeRole(userId, UserRoleEnum.USER_ROLE, currentUserId));
+            return ResponseEntity.ok().body(userService.changeRole(userId, UserRoleType.USER_ROLE, currentUserId));
         }
-        return ResponseEntity.ok().body(userService.changeRole(userId, UserRoleEnum.ADMIN_ROLE, currentUserId));
+        return ResponseEntity.ok().body(userService.changeRole(userId, UserRoleType.ADMIN_ROLE, currentUserId));
     }
 
     @PostMapping(path = "/status")
@@ -77,6 +74,13 @@ public class UserController {
     public ResponseEntity getUserById(@RequestParam(value = "userId") Long userId) throws ExceptionNotFound {
         LOGGER.info("UserController : getUserById " + userId);
         return ResponseEntity.ok().body( userService.getUserById(userId));
+    }
+
+    @PostMapping(path = "/edit/picture", produces = "application/json")
+    public ResponseEntity changeProfilePicture(@RequestParam(value = "userId") Long userId,@RequestBody String photo) throws ExceptionInvalidCredentials, ExceptionNotFound, ExceptionInvalidData {
+        LOGGER.info("UserController : changeProfilePicture(" + userId + ")");
+        userService.changeProfilePicture(userId, photo);
+        return ResponseEntity.ok().build();
     }
 
 }
