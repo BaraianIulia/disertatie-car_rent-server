@@ -1,6 +1,7 @@
 package com.disertatie.rent.car.controller;
 
 import com.disertatie.rent.car.exceptions.ExceptionExistingCar;
+import com.disertatie.rent.car.exceptions.ExceptionNotFound;
 import com.disertatie.rent.car.model.CarModel;
 import com.disertatie.rent.car.service.CarService;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +27,21 @@ public class CarController {
     }
 
     @PostMapping(path = "/add")
-    public ResponseEntity register(@RequestBody CarModel carModel) throws ExceptionExistingCar {
+    public ResponseEntity addCar(@RequestBody CarModel carModel) throws ExceptionExistingCar {
         LOGGER.info("CarController : add " + carModel.getVehicleIdentificationNumber());
         carService.addCar(carModel);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(path = "/details/{vin}", produces = "application/json")
+    public ResponseEntity<CarModel> getCar(@PathVariable(name = "vin") String vin) throws ExceptionNotFound {
+        LOGGER.info("CarController : getCar()" + vin);
+        return ResponseEntity.ok().body(carService.getCar(vin));
+    }
+
+    @PostMapping(path = "/edit")
+    public CarModel editCar(@RequestBody CarModel carModel) throws ExceptionNotFound {
+        LOGGER.info("CarController : edit " + carModel.getVehicleIdentificationNumber());
+        return carService.editCar(carModel);
     }
 }

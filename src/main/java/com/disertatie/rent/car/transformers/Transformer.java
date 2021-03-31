@@ -113,6 +113,7 @@ public class Transformer {
         if (null != carModel.getFabricationYear()) {
             car.setFabricationYear(carModel.getFabricationYear());
         }
+
         if (carModel.getGearbox().toLowerCase().contains("manual")) {
             car.setGearbox(GearboxType.MANUAL);
         } else if (carModel.getGearbox().toLowerCase().contains("automat")) {
@@ -160,8 +161,8 @@ public class Transformer {
         carModel.setBrand(car.getBrand());
         carModel.setModel(car.getModel());
         carModel.setDoors(car.getDoors());
-        carModel.setSeats(carModel.getSeats());
-        carModel.setFabricationYear(carModel.getFabricationYear());
+        carModel.setSeats(car.getSeats());
+        carModel.setFabricationYear(car.getFabricationYear());
         carModel.setGearbox(car.getGearbox().toString());
         carModel.setPricePerDay(car.getPricePerDay());
         carModel.setInsurance(car.getInsurance());
@@ -171,7 +172,9 @@ public class Transformer {
         carModel.setConditionalAir(car.isConditionalAir());
         carModel.setFuelType(car.getFuelType().toString());
         carModel.setLuggageCarrierVolume(car.getLuggageCarrierVolume());
+        if(null != car.getPhoto()){
         carModel.setPhoto(new String(car.getPhoto(), StandardCharsets.UTF_8));
+        }
 
         return carModel;
 

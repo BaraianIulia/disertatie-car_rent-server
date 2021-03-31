@@ -1,8 +1,5 @@
 package com.disertatie.rent.car.model;
 
-import com.disertatie.rent.car.model.enumType.FuelType;
-import com.disertatie.rent.car.model.enumType.GearboxType;
-
 public class CarModel {
 
     private Long id;

@@ -2,6 +2,7 @@ package com.disertatie.rent.car.service.impl;
 
 import com.disertatie.rent.car.entities.Car;
 import com.disertatie.rent.car.exceptions.ExceptionExistingCar;
+import com.disertatie.rent.car.exceptions.ExceptionNotFound;
 import com.disertatie.rent.car.model.CarModel;
 import com.disertatie.rent.car.repository.CarRepository;
 import com.disertatie.rent.car.service.CarService;
@@ -38,11 +39,33 @@ public class CarServiceImp implements CarService {
 
     @Override
     public void addCar(CarModel carModel) throws ExceptionExistingCar {
-        Optional<Car> optionalUser = carRepository.findByVehicleIdentificationNumber(carModel.getVehicleIdentificationNumber());
-        if (optionalUser.isPresent()) {
+        Optional<Car> optionalCar = carRepository.findByVehicleIdentificationNumber(carModel.getVehicleIdentificationNumber());
+        if (optionalCar.isPresent()) {
             throw new ExceptionExistingCar("Car with vehicle file identification number: " + carModel.getVehicleIdentificationNumber() + " already exists.");
         } else {
             carRepository.save(transformer.transformModelToEntity(carModel));
+        }
+    }
+
+    @Override
+    public CarModel getCar(String vin) throws ExceptionNotFound {
+        Optional<Car> optionalCar = carRepository.findByVehicleIdentificationNumber(vin);
+        if (!optionalCar.isPresent()) {
+            throw new ExceptionNotFound("Car with vehicle file identification number: " + vin + " does not exist.");
+        } else {
+            return transformer.transformEntityToModel(optionalCar.get());
+        }
+    }
+
+    @Override
+    public CarModel editCar(CarModel carModel) throws ExceptionNotFound {
+        Optional<Car> optionalCar = carRepository.findByVehicleIdentificationNumber(carModel.getVehicleIdentificationNumber());
+        if (!optionalCar.isPresent()) {
+            throw new ExceptionNotFound("Car with vehicle file identification number: " + carModel.getVehicleIdentificationNumber() + " does not exist.");
+        } else {
+            Car car = optionalCar.get();
+            carModel.setId(car.getId());
+            return transformer.transformEntityToModel(carRepository.save(transformer.transformModelToEntity(carModel)));
         }
     }
 }
