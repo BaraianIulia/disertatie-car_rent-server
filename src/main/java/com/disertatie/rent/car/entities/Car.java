@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -15,10 +16,10 @@ public class Car {
 
     @Id
     @GeneratedValue
-    @Column(name = "id")
+    @Column(name = "car_id")
     private Long id;
 
-    @Column(name = "vehicleIdentificationNumber")
+    @Column(name = "vehicle_identification_number")
     private String vehicleIdentificationNumber;
 
     @Column(name = "brand")
@@ -33,41 +34,44 @@ public class Car {
     @Column(name = "seats")
     private Integer seats;
 
-    @Column(name = "fabricationYear")
+    @Column(name = "fabrication_year")
     private Integer fabricationYear;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gearbox")
     private GearboxType gearbox;
 
-    @Column(name = "pricePerDay")
+    @Column(name = "price_per_day")
     private Double pricePerDay;
 
     @Column(name = "insurance")
     private Double insurance;
 
-    @Column(name = "horsePower")
+    @Column(name = "horse_power")
     private Double horsePower;
 
-    @Column(name = "hexColor")
+    @Column(name = "hex_color")
     private Integer hexColor;
 
     @Column(name = "color")
     private String color;
 
-    @Column(name = "conditionalAir")
+    @Column(name = "conditional_air")
     private boolean conditionalAir;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "fuelType")
+    @Column(name = "fuel_type")
     private FuelType fuelType;
 
-    @Column(name = "luggageCarrierVolume")
+    @Column(name = "luggage_carrier_volume")
     private Integer luggageCarrierVolume;
 
     @Column(name = "photo")
     @Lob
     private byte[] photo;
+
+    @OneToMany(mappedBy="car", cascade = CascadeType.ALL)
+    private Set<RentDetail> rentDetailsSet;
 
     public Car() {
     }

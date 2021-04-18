@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.sql.Date;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -15,7 +16,7 @@ public class User {
 
     @Id
     @GeneratedValue
-    @Column(name = "id")
+    @Column(name = "user_id")
     private Long id;
 
     @Column(name = "name")
@@ -50,7 +51,11 @@ public class User {
     @Column(name = "status")
     private boolean status;
 
-    //todo card id
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Card> cardSet;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Receipt> receiptSet;
 
     public User() {
     }

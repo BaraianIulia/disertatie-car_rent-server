@@ -81,4 +81,24 @@ public class ExceptionHandlerController {
         error.setRequestedURI(request.getRequestURI());
         return error;
     }
+
+    @ExceptionHandler(ExceptionExistingCard.class)
+    @ResponseStatus(value = HttpStatus.CONFLICT)
+    public @ResponseBody
+    ExceptionResponse handleExistingCard(final ExceptionExistingCard exception, final HttpServletRequest request) {
+        ExceptionResponse error = new ExceptionResponse();
+        error.setMessage(exception.getMessage());
+        error.setRequestedURI(request.getRequestURI());
+        return error;
+    }
+
+    @ExceptionHandler(ExceptionAlreadyRent.class)
+    @ResponseStatus(value = HttpStatus.CONFLICT)
+    public @ResponseBody
+    ExceptionResponse handleAlreadyRent(final ExceptionAlreadyRent exception, final HttpServletRequest request) {
+        ExceptionResponse error = new ExceptionResponse();
+        error.setMessage(exception.getMessage());
+        error.setRequestedURI(request.getRequestURI());
+        return error;
+    }
 }

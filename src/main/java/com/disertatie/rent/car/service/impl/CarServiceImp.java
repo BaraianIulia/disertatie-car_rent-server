@@ -5,12 +5,14 @@ import com.disertatie.rent.car.exceptions.ExceptionExistingCar;
 import com.disertatie.rent.car.exceptions.ExceptionNotFound;
 import com.disertatie.rent.car.model.CarModel;
 import com.disertatie.rent.car.repository.CarRepository;
+import com.disertatie.rent.car.repository.RentDetailRepository;
 import com.disertatie.rent.car.service.CarService;
 import com.disertatie.rent.car.transformers.Transformer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,19 +24,26 @@ public class CarServiceImp implements CarService {
     @Resource(name = "carRepository")
     private CarRepository carRepository;
 
+    @Resource(name = "rentDetailRepository")
+    private RentDetailRepository rentDetailRepository;
+
     @Resource(name = "transformer")
     private Transformer transformer;
 
 
     @Override
-    public List<CarModel> getAllCars() {
-        List<Car> carList = carRepository.findAll();
-        List<CarModel> userModelList = new ArrayList<>();
-        for (Car car : carList
-        ) {
-            userModelList.add(transformer.transformEntityToModel(car));
+    public List<CarModel> getAllCars(LocalDate startDate, LocalDate endDate) {
+        List<CarModel> carListModel = new ArrayList<>();
+        List<Car> carList;
+        if (startDate != null && endDate != null) {
+            carList = carRepository.getAllNotBetweenDates(startDate, endDate);
+        } else {
+            carList = carRepository.findAll();
         }
-        return userModelList;
+        for (Car car : carList) {
+            carListModel.add(transformer.transformEntityToModel(car));
+        }
+        return carListModel;
     }
 
     @Override
@@ -66,6 +75,16 @@ public class CarServiceImp implements CarService {
             Car car = optionalCar.get();
             carModel.setId(car.getId());
             return transformer.transformEntityToModel(carRepository.save(transformer.transformModelToEntity(carModel)));
+        }
+    }
+
+    @Override
+    public CarModel getCar(Long id) throws ExceptionNotFound {
+        Optional<Car> optionalCar = carRepository.findById(id);
+        if (!optionalCar.isPresent()) {
+            throw new ExceptionNotFound("Car with id: " + id + " does not exist.");
+        } else {
+            return transformer.transformEntityToModel(optionalCar.get());
         }
     }
 }

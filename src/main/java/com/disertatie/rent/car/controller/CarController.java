@@ -5,9 +5,12 @@ import com.disertatie.rent.car.exceptions.ExceptionNotFound;
 import com.disertatie.rent.car.model.CarModel;
 import com.disertatie.rent.car.service.CarService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -20,10 +23,20 @@ public class CarController {
     @Resource(name = "carService")
     private CarService carService;
 
+
     @GetMapping(path = "/list", produces = "application/json")
-    public ResponseEntity<List<CarModel>> getAllCars() {
+    public ResponseEntity<List<CarModel>> getAllCars(@RequestParam(value = "startDate") String startDate, @RequestParam(value = "endDate") String endDate) {
         LOGGER.info("CarController : getAllCars()");
-        return ResponseEntity.ok().body(carService.getAllCars());
+        LocalDate endDateTime = null;
+        LocalDate startDateTime = null;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        if (!StringUtils.isEmpty(startDate) && !startDate.equals("null")) {
+            startDateTime = LocalDate.parse(startDate, formatter);
+        }
+        if (!StringUtils.isEmpty(endDate) && !endDate.equals("null")) {
+            endDateTime = LocalDate.parse(endDate, formatter);
+        }
+        return ResponseEntity.ok().body(carService.getAllCars(startDateTime, endDateTime));
     }
 
     @PostMapping(path = "/add")

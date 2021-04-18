@@ -1,12 +1,14 @@
 package com.disertatie.rent.car.transformers;
 
-import com.disertatie.rent.car.entities.Car;
-import com.disertatie.rent.car.entities.User;
-import com.disertatie.rent.car.model.CarModel;
-import com.disertatie.rent.car.model.UserModel;
+import com.disertatie.rent.car.entities.*;
+import com.disertatie.rent.car.model.*;
 import com.disertatie.rent.car.model.enumType.FuelType;
 import com.disertatie.rent.car.model.enumType.GearboxType;
+import com.disertatie.rent.car.model.enumType.PayMethodType;
 import com.disertatie.rent.car.model.enumType.UserRoleType;
+import com.disertatie.rent.car.repository.CarRepository;
+import com.disertatie.rent.car.repository.RentDetailRepository;
+import com.disertatie.rent.car.repository.UserRepository;
 import com.disertatie.rent.car.service.passwordEncoder.PasswordEncoder;
 import com.disertatie.rent.car.transformers.utils.ColorUtils;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,15 @@ public class Transformer {
 
     @Resource(name = "colorUtils")
     private ColorUtils colorUtils;
+
+    @Resource(name = "userRepository")
+    private UserRepository userRepository;
+
+    @Resource(name = "carRepository")
+    private CarRepository carRepository;
+
+    @Resource(name = "rentDetailRepository")
+    private RentDetailRepository rentDetailRepository;
 
     public User transformModelToEntity(UserModel userModel) {
         User user = new User();
@@ -172,13 +183,99 @@ public class Transformer {
         carModel.setConditionalAir(car.isConditionalAir());
         carModel.setFuelType(car.getFuelType().toString());
         carModel.setLuggageCarrierVolume(car.getLuggageCarrierVolume());
-        if(null != car.getPhoto()){
-        carModel.setPhoto(new String(car.getPhoto(), StandardCharsets.UTF_8));
+        if (null != car.getPhoto()) {
+            carModel.setPhoto(new String(car.getPhoto(), StandardCharsets.UTF_8));
         }
 
         return carModel;
 
     }
 
+    public Card transformModelToEntity(CardModel cardModel) {
+        Card card = new Card();
+        if (cardModel.getId() != null) {
+            card.setId(cardModel.getId());
+        }
+        if (cardModel.getCardHolder() != null) {
+            card.setCardHolder(cardModel.getCardHolder());
+        }
+        if (cardModel.getCardNumber() != null) {
+            card.setCardNumber(cardModel.getCardNumber());
+        }
+        if (cardModel.getExpiryDate() != null) {
+            card.setExpiryDate(cardModel.getExpiryDate());
+        }
+        if (cardModel.getCvvCode() != null) {
+            card.setCvvCode(cardModel.getCvvCode());
+        }
+        if (cardModel.getUserId() != null) {
+            card.setUser(userRepository.getOne(cardModel.getUserId()));
+        }
+        return card;
+    }
 
+    public CardModel transformEntityToModel(Card card) {
+        CardModel cardModel = new CardModel();
+        cardModel.setId(card.getId());
+        cardModel.setCardHolder(card.getCardHolder());
+        cardModel.setCardNumber(card.getCardNumber());
+        cardModel.setExpiryDate(card.getExpiryDate());
+        cardModel.setUserId(card.getUser().getId());
+
+        return cardModel;
+    }
+
+    public RentDetail transformModelToEntity(RentDetailModel rentDetailModel) {
+        RentDetail rentDetail = new RentDetail();
+        if (rentDetailModel.getId() != null) {
+            rentDetail.setId(rentDetailModel.getId());
+        }
+        if (rentDetailModel.getCarId() != null) {
+            rentDetail.setCar(carRepository.getOne(rentDetailModel.getCarId()));
+        }
+        if (rentDetailModel.getStartDate() != null) {
+            rentDetail.setStartDate(rentDetailModel.getStartDate());
+        }
+        if (rentDetailModel.getEndDate() != null) {
+            rentDetail.setEndDate(rentDetailModel.getEndDate());
+        }
+        return rentDetail;
+    }
+
+    public RentDetailModel transformEntityToModel(RentDetail rentDetail) {
+        RentDetailModel rentDetailModel = new RentDetailModel();
+        rentDetailModel.setId(rentDetail.getId());
+        rentDetailModel.setCarId(rentDetail.getCar().getId());
+        rentDetailModel.setStartDate(rentDetail.getStartDate());
+        rentDetailModel.setEndDate(rentDetail.getEndDate());
+
+        return rentDetailModel;
+    }
+
+    public Receipt transformModelToEntity(OrderDetailModel orderDetailModel) {
+        Receipt receipt = new Receipt();
+        receipt.setTotalPrice(orderDetailModel.getTotalPrice());
+        receipt.setUser(userRepository.getOne(orderDetailModel.getUserId()));
+        receipt.setPayMethod(transformStringToEnum(orderDetailModel.getPayMethod()));
+        receipt.setRentDetail(rentDetailRepository.getOne(orderDetailModel.getRentDetailId()));
+
+        return receipt;
+    }
+
+    public RentDetail transformModelToEntityRentDetail(OrderDetailModel orderDetailModel) {
+        RentDetail rentDetail = new RentDetail();
+        rentDetail.setCar(carRepository.getOne(orderDetailModel.getCarId()));
+        rentDetail.setStartDate(orderDetailModel.getStartDate());
+        rentDetail.setEndDate(orderDetailModel.getEndDate());
+        rentDetail.setPickupDropoffLocation(orderDetailModel.getPickupDropoffLocation());
+
+        return rentDetail;
+    }
+
+    private PayMethodType transformStringToEnum(String payMethod) {
+        if (payMethod.toLowerCase().contains("cash")) {
+            return PayMethodType.CASH;
+        }
+        return PayMethodType.CARD;
+    }
 }
