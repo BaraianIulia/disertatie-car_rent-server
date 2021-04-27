@@ -18,4 +18,6 @@ public interface CarService {
     CarModel editCar(CarModel carModel) throws ExceptionNotFound;
 
     CarModel getCar(Long id) throws ExceptionNotFound;
+
+    boolean checkCarForAvailability(Long carId, LocalDate startDateTime, LocalDate endDateTime);
 }

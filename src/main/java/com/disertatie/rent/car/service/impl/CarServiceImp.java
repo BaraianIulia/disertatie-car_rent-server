@@ -87,4 +87,9 @@ public class CarServiceImp implements CarService {
             return transformer.transformEntityToModel(optionalCar.get());
         }
     }
+
+    @Override
+    public boolean checkCarForAvailability(Long carId, LocalDate startDateTime, LocalDate endDateTime) {
+        return rentDetailRepository.checkCarForAvailability(carId, startDateTime, endDateTime).size() == 0;
+    }
 }

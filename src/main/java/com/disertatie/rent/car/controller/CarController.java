@@ -57,4 +57,19 @@ public class CarController {
         LOGGER.info("CarController : edit " + carModel.getVehicleIdentificationNumber());
         return carService.editCar(carModel);
     }
+
+    @GetMapping(path = "/availability")
+    public ResponseEntity<Boolean> checkCarForAvailability(@RequestParam(value = "carId") Long carId, @RequestParam(value = "startDate") String startDate, @RequestParam(value = "endDate") String endDate){
+        LOGGER.info("CarController : getAllCars()");
+        LocalDate endDateTime = null;
+        LocalDate startDateTime = null;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        if (!StringUtils.isEmpty(startDate) && !startDate.equals("null")) {
+            startDateTime = LocalDate.parse(startDate, formatter);
+        }
+        if (!StringUtils.isEmpty(endDate) && !endDate.equals("null")) {
+            endDateTime = LocalDate.parse(endDate, formatter);
+        }
+        return ResponseEntity.ok().body(carService.checkCarForAvailability(carId, startDateTime, endDateTime));
+    }
 }
