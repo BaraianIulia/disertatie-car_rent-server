@@ -61,12 +61,12 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public void register(UserModel userModel) throws ExceptionExistingUser {
+    public UserModel register(UserModel userModel) throws ExceptionExistingUser {
         Optional<User> optionalUser = userRepository.findByEmail(userModel.getEmail());
         if (optionalUser.isPresent()) {
             throw new ExceptionExistingUser("User with email: " + userModel.getEmail() + " already exists.");
         } else {
-            userRepository.save(transformer.transformModelToEntity(userModel));
+            return transformer.transformEntityToModel(userRepository.save(transformer.transformModelToEntity(userModel)));
         }
     }
 

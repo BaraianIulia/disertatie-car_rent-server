@@ -60,7 +60,7 @@ public class CarController {
 
     @GetMapping(path = "/availability")
     public ResponseEntity<Boolean> checkCarForAvailability(@RequestParam(value = "carId") Long carId, @RequestParam(value = "startDate") String startDate, @RequestParam(value = "endDate") String endDate){
-        LOGGER.info("CarController : getAllCars()");
+        LOGGER.info("CarController : checkCarForAvailability()");
         LocalDate endDateTime = null;
         LocalDate startDateTime = null;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");

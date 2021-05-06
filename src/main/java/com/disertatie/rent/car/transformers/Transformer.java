@@ -2,10 +2,7 @@ package com.disertatie.rent.car.transformers;
 
 import com.disertatie.rent.car.entities.*;
 import com.disertatie.rent.car.model.*;
-import com.disertatie.rent.car.model.enumType.FuelType;
-import com.disertatie.rent.car.model.enumType.GearboxType;
-import com.disertatie.rent.car.model.enumType.PayMethodType;
-import com.disertatie.rent.car.model.enumType.UserRoleType;
+import com.disertatie.rent.car.model.enumType.*;
 import com.disertatie.rent.car.repository.CarRepository;
 import com.disertatie.rent.car.repository.RentDetailRepository;
 import com.disertatie.rent.car.repository.UserRepository;
@@ -277,5 +274,48 @@ public class Transformer {
             return PayMethodType.CASH;
         }
         return PayMethodType.CARD;
+    }
+
+    public Comment transformModelToEntity(CommentModel commentModel) {
+        Comment comment = new Comment();
+        if (commentModel.getId() != null) {
+            comment.setId(commentModel.getId());
+        }
+        if (commentModel.getCarId() != null) {
+            comment.setCar(carRepository.getOne(commentModel.getCarId()));
+        }
+        if (!StringUtils.isEmpty(commentModel.getText())) {
+            comment.setText(commentModel.getText());
+        }
+        if (!StringUtils.isEmpty(commentModel.getAuthor())) {
+            comment.setAuthor(commentModel.getAuthor());
+        }
+        if (!StringUtils.isEmpty(commentModel.getAuthorEmail())) {
+            comment.setAuthorEmail(commentModel.getAuthorEmail());
+        }
+        if (StringUtils.isEmpty(commentModel.getStatus())) {
+            comment.setStatus(CommentType.PENDING);
+        } else {
+            comment.setStatus(CommentType.APPROVED);
+        }
+        if (commentModel.getRating()!= null) {
+            comment.setRating(commentModel.getRating());
+        }
+
+        return comment;
+    }
+
+    public CommentModel transformEntityToModel(Comment comment) {
+        CommentModel commentModel = new CommentModel();
+
+        commentModel.setId(comment.getId());
+        commentModel.setCarId(comment.getCar().getId());
+        commentModel.setText(comment.getText());
+        commentModel.setAuthor(comment.getAuthor());
+        commentModel.setAuthorEmail(comment.getAuthorEmail());
+        commentModel.setStatus(comment.getStatus().toString());
+        commentModel.setRating(comment.getRating());
+
+        return commentModel;
     }
 }

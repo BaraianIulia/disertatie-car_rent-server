@@ -12,7 +12,7 @@ public interface UserService {
 
     UserModel login(String email, String password) throws ExceptionInvalidCredentials, ExceptionNotFound, ExceptionDeactivatedAccount;
 
-    void register(UserModel userModel) throws ExceptionExistingUser;
+    UserModel register(UserModel userModel) throws ExceptionExistingUser;
 
     UserModel changeRole(Long userId, UserRoleType userRole, Long currentUserId) throws ExceptionNotFound, ExceptionUnauthorizedAction;
 

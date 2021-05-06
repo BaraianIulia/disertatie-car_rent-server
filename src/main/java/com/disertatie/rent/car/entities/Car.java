@@ -73,6 +73,14 @@ public class Car {
     @OneToMany(mappedBy="car", cascade = CascadeType.ALL)
     private Set<RentDetail> rentDetailsSet;
 
+    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+    private Set<Comment> commentSet;
+
+    @OneToOne(mappedBy = "car", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private CarTotalRating carTotalRating;
+
+
     public Car() {
     }
 }
