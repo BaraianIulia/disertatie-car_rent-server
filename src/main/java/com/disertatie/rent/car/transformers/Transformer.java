@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.awt.*;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
 
 @Component(value = "transformer")
 public class Transformer {
@@ -262,8 +263,8 @@ public class Transformer {
     public RentDetail transformModelToEntityRentDetail(OrderDetailModel orderDetailModel) {
         RentDetail rentDetail = new RentDetail();
         rentDetail.setCar(carRepository.getOne(orderDetailModel.getCarId()));
-        rentDetail.setStartDate(orderDetailModel.getStartDate());
-        rentDetail.setEndDate(orderDetailModel.getEndDate());
+        rentDetail.setStartDate(orderDetailModel.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+        rentDetail.setEndDate(orderDetailModel.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
         rentDetail.setPickupDropoffLocation(orderDetailModel.getPickupDropoffLocation());
 
         return rentDetail;

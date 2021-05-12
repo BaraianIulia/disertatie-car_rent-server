@@ -26,7 +26,7 @@ public class RentDetailServiceImp implements RentDetailService {
     @Override
     public Long addRentDetail(OrderDetailModel orderDetailModel) throws ExceptionAlreadyRent {
         RentDetail rentDetail = transformer.transformModelToEntityRentDetail(orderDetailModel);
-        List<RentDetail> rentDetails = rentDetailRepository.findAllByDates(rentDetail.getStartDate(), rentDetail.getEndDate());
+        List<RentDetail> rentDetails = rentDetailRepository.checkCarForAvailability(rentDetail.getCar().getId(), rentDetail.getStartDate(), rentDetail.getEndDate());
         if(rentDetails.size() > 0){
             throw new ExceptionAlreadyRent("The car is already rented for this period.");
         }else {

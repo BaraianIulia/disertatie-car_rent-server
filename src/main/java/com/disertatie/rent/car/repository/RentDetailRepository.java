@@ -11,10 +11,8 @@ import java.util.List;
 
 @Repository(value = "rentDetailRepository")
 public interface RentDetailRepository extends JpaRepository<RentDetail, Long> {
-    @Query(value = "SELECT * FROM RENT_DETAILS rd WHERE (rd.start_date <= :endDate and rd.end_date >= :endDate) or (rd.start_date <= :startDate and rd.end_date >= :startDate)", nativeQuery = true)
-    List<RentDetail> findAllByDates(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
-    @Query(value = "SELECT * FROM RENT_DETAILS rd WHERE rd.car_id = :carId AND ((rd.start_date <= :endDate and rd.end_date >= :endDate) or (rd.start_date <= :startDate and rd.end_date >= :startDate))", nativeQuery = true)
+    @Query(value = "SELECT * FROM RENT_DETAILS rd WHERE rd.car_id = :carId AND ((:endDate >= rd.start_date and :endDate <= rd.end_date) or (rd.start_date <= :startDate and rd.end_date >= :startDate) or (rd.start_date >= :startDate and rd.end_date <= :endDate))", nativeQuery = true)
     List<RentDetail> checkCarForAvailability(Long carId, LocalDate startDate, LocalDate endDate);
 }
 
