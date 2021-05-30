@@ -1,9 +1,13 @@
 package com.disertatie.rent.car.service.impl;
 
 import com.disertatie.rent.car.entities.User;
+import com.disertatie.rent.car.exceptions.ExceptionDeactivatedAccount;
 import com.disertatie.rent.car.exceptions.ExceptionExistingUser;
+import com.disertatie.rent.car.exceptions.ExceptionInvalidCredentials;
+import com.disertatie.rent.car.exceptions.ExceptionNotFound;
 import com.disertatie.rent.car.model.UserModel;
 import com.disertatie.rent.car.repository.UserRepository;
+import com.disertatie.rent.car.service.passwordEncoder.PasswordEncoder;
 import com.disertatie.rent.car.transformers.Transformer;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +37,8 @@ public class UserServiceImpTest {
     private UserRepository userRepository;
     @Mock
     private Transformer transformer;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserServiceImp userService;
@@ -64,8 +70,28 @@ public class UserServiceImpTest {
 
     @Test
     public void login() {
+        when(userRepository.findByEmail(aUserModel().getEmail())).thenReturn(Optional.ofNullable(aUser()));
+        when(passwordEncoder.check(aUserModel().getPassword(), aUser().getPassword())).thenReturn(true);
+
+        try {
+            userService.login(aUserModel().getEmail(), aUserModel().getPassword());
+        } catch (ExceptionInvalidCredentials | ExceptionDeactivatedAccount | ExceptionNotFound exceptionInvalidCredentials) {
+            exceptionInvalidCredentials.printStackTrace();
+        }
     }
 
+    @Test
+    public void loginDeactivatedAccount()  {
+
+    }
+
+    @Test(expected = ExceptionInvalidCredentials.class)
+    public void loginInvalidCredentials() throws ExceptionInvalidCredentials, ExceptionNotFound, ExceptionDeactivatedAccount {
+        when(userRepository.findByEmail(aUserModel().getEmail())).thenReturn(Optional.ofNullable(aUser()));
+
+        userService.login(aUserModel().getEmail(), "abc");
+
+    }
     @Test
     public void register() throws ExceptionExistingUser {
         assertNotNull(userRepository);
@@ -114,7 +140,23 @@ public class UserServiceImpTest {
     }
 
     @Test
-    public void getUserById() {
+    public void getUserById() throws ExceptionNotFound {
+        when(userRepository.findById(aUserModel().getId())).thenReturn(Optional.ofNullable(aUser()));
+        when(transformer.transformEntityToModel((User) any())).thenReturn(aUserModel());
+
+        UserModel userModel = userService.getUserById(aUserModel().getId());
+
+        assertEquals(userModel.getId(), aUser().getId());
+    }
+
+    @Test(expected = ExceptionNotFound.class)
+    public void getUserByIdException() throws ExceptionNotFound {
+        when(userRepository.findById(aUserModel().getId())).thenReturn(Optional.empty());
+        when(transformer.transformEntityToModel((User) any())).thenReturn(aUserModel());
+
+        UserModel userModel = userService.getUserById(aUserModel().getId());
+
+        assertEquals(userModel.getId(), aUser().getId());
     }
 
     @Test

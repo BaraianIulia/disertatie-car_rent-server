@@ -1,5 +1,7 @@
 package com.disertatie.rent.car.model;
 
+import java.time.LocalDate;
+
 public class CommentModel {
 
     private Long id;
@@ -9,6 +11,7 @@ public class CommentModel {
     private String authorEmail;
     private String status;
     private Long rating;
+    private LocalDate created;
 
 
     public CommentModel() {
@@ -69,5 +72,13 @@ public class CommentModel {
 
     public void setRating(Long rating) {
         this.rating = rating;
+    }
+
+    public LocalDate getCreated() {
+        return created;
+    }
+
+    public void setCreated(LocalDate created) {
+        this.created = created;
     }
 }

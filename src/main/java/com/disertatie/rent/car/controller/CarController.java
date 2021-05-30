@@ -1,8 +1,10 @@
 package com.disertatie.rent.car.controller;
 
+import com.disertatie.rent.car.dataGenerator.DataGenerator;
 import com.disertatie.rent.car.exceptions.ExceptionExistingCar;
 import com.disertatie.rent.car.exceptions.ExceptionNotFound;
 import com.disertatie.rent.car.model.CarModel;
+import com.disertatie.rent.car.model.CarQuizzModel;
 import com.disertatie.rent.car.service.CarService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -22,6 +24,9 @@ public class CarController {
 
     @Resource(name = "carService")
     private CarService carService;
+
+    @Resource(name = "dataGenerator")
+    private DataGenerator dataGenerator;
 
 
     @GetMapping(path = "/list", produces = "application/json")
@@ -72,4 +77,11 @@ public class CarController {
         }
         return ResponseEntity.ok().body(carService.checkCarForAvailability(carId, startDateTime, endDateTime));
     }
+
+    @PostMapping(path = "/quizz/{userId}", produces = "application/json")
+    public ResponseEntity<List<CarModel>> getCarQuizz(@PathVariable(name = "userId") Long userId, @RequestBody CarQuizzModel carQuizzModel) throws ExceptionNotFound {
+        LOGGER.info("CarController : getCarQuizz()");
+        return ResponseEntity.ok().body(carService.getCarQuizz(userId, carQuizzModel));
+    }
+
 }

@@ -92,4 +92,35 @@ public class CommentServiceImpl implements CommentService {
             }
         }
     }
+
+    @Override
+    public List<CommentModel> getAllByCarId(Long carId) {
+        List<Comment> commentList = commentRepository.getAllByCarId(carId);
+        List<CommentModel> commentModelList = new ArrayList<>();
+        for (Comment comment : commentList) {
+            commentModelList.add(transformer.transformEntityToModel(comment));
+        }
+        return commentModelList;
+    }
+
+    @Override
+    public CommentModel getUserCommentByCarId(String authorEmail, Long carId) {
+        Optional<Comment> optionalComment = commentRepository.getCommentByAuthorEmailAndCarId(authorEmail, carId);
+        if (optionalComment.isPresent()) {
+            return transformer.transformEntityToModel(optionalComment.get());
+        }
+        return new CommentModel();
+
+    }
+
+    @Override
+    public List<CommentModel> getAllUserCommentsByAuthorEmail(String authorEmail) {
+        List<Comment> commentList = commentRepository.getAllByAuthorEmail(authorEmail);
+        List<CommentModel> commentModelList = new ArrayList<>();
+        for (Comment comment : commentList) {
+            commentModelList.add(transformer.transformEntityToModel(comment));
+        }
+        return commentModelList;
+    }
+
 }

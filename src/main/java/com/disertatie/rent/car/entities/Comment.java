@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -35,6 +36,9 @@ public class Comment {
 
     @Column(name = "rating")
     private Long rating;
+
+    @Column(name = "created")
+    private LocalDate created;
 
     public Comment() {
     }

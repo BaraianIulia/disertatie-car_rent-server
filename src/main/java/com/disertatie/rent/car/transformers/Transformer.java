@@ -7,13 +7,13 @@ import com.disertatie.rent.car.repository.CarRepository;
 import com.disertatie.rent.car.repository.RentDetailRepository;
 import com.disertatie.rent.car.repository.UserRepository;
 import com.disertatie.rent.car.service.passwordEncoder.PasswordEncoder;
-import com.disertatie.rent.car.transformers.utils.ColorUtils;
+import com.disertatie.rent.car.transformers.utils.ColorUtilsAndroid;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.awt.*;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.ZoneId;
 
 @Component(value = "transformer")
@@ -21,9 +21,6 @@ public class Transformer {
 
     @Resource(name = "passwordEncoder")
     private PasswordEncoder passwordEncoder;
-
-    @Resource(name = "colorUtils")
-    private ColorUtils colorUtils;
 
     @Resource(name = "userRepository")
     private UserRepository userRepository;
@@ -139,13 +136,7 @@ public class Transformer {
         }
         if (null != carModel.getColor()) {
             car.setColor(carModel.getColor());
-            try {
-                Color color = (Color) Color.class.getField(carModel.getColor().toUpperCase()).get(null);
-                car.setHexColor(colorUtils.colorToHex(color));
-            } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-                e.printStackTrace();
-                return null;
-            }
+            car.setHexColor(ColorUtilsAndroid.colorToHex(carModel.getColor()));
         }
         car.setConditionalAir(carModel.isConditionalAir());
         if (carModel.getFuelType().toLowerCase().contains("diesel")) {
@@ -299,9 +290,10 @@ public class Transformer {
         } else {
             comment.setStatus(CommentType.APPROVED);
         }
-        if (commentModel.getRating()!= null) {
+        if (commentModel.getRating() != null) {
             comment.setRating(commentModel.getRating());
         }
+        comment.setCreated(LocalDate.now());
 
         return comment;
     }
@@ -316,6 +308,7 @@ public class Transformer {
         commentModel.setAuthorEmail(comment.getAuthorEmail());
         commentModel.setStatus(comment.getStatus().toString());
         commentModel.setRating(comment.getRating());
+        commentModel.setCreated(comment.getCreated());
 
         return commentModel;
     }

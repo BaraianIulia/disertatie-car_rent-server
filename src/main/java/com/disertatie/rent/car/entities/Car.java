@@ -51,7 +51,7 @@ public class Car {
     private Double horsePower;
 
     @Column(name = "hex_color")
-    private Integer hexColor;
+    private String hexColor;
 
     @Column(name = "color")
     private String color;

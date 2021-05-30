@@ -13,7 +13,7 @@ public class CarModel {
     private Double pricePerDay;
     private Double insurance;
     private Double horsePower;
-    private Integer hexColor;
+    private String hexColor;
     private String color;
     private boolean conditionalAir;
     private String fuelType;
@@ -111,11 +111,11 @@ public class CarModel {
         this.horsePower = horsePower;
     }
 
-    public Integer getHexColor() {
+    public String getHexColor() {
         return hexColor;
     }
 
-    public void setHexColor(Integer hexColor) {
+    public void setHexColor(String hexColor) {
         this.hexColor = hexColor;
     }
 

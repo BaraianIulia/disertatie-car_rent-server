@@ -19,4 +19,6 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     @Query(value = "SELECT * FROM CARS c LEFT JOIN RENT_DETAILS r ON c.car_id = r.car_id WHERE r.END_DATE < :startDate or r.START_DATE > :endDate", nativeQuery = true)
     List<Car> getAllNotBetweenDates(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
+    @Query(value = "SELECT * FROM CARS c WHERE c.brand IN (:brand) AND c.fabrication_year LIKE :fabricationYear AND price_per_day LIKE :pricePerDay AND horse_power LIKE :horsePower AND c.seats LIKE :seats AND c.color IN (:color) ", nativeQuery = true)
+    List<Car> carQuizz(List<String> brand, Integer fabricationYear, Integer pricePerDay, Integer horsePower,  Integer seats, List<String> color);
 }

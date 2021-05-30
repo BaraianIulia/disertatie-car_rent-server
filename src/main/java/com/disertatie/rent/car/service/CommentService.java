@@ -14,4 +14,10 @@ public interface CommentService {
     void deleteComment(Long commentId);
 
     void approveComment(Long commentId) throws ExceptionNotFound;
+
+List<CommentModel> getAllByCarId(Long carId);
+
+    CommentModel getUserCommentByCarId(String authorEmail, Long carId);
+
+    List<CommentModel> getAllUserCommentsByAuthorEmail(String authorEmail);
 }
