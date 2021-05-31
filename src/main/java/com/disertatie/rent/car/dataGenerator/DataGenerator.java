@@ -1,9 +1,7 @@
 package com.disertatie.rent.car.dataGenerator;
 
-import com.disertatie.rent.car.entities.Car;
 import com.disertatie.rent.car.exceptions.ExceptionExistingCar;
 import com.disertatie.rent.car.exceptions.ExceptionExistingUser;
-import com.disertatie.rent.car.exceptions.ExceptionNotFound;
 import com.disertatie.rent.car.model.CarModel;
 import com.disertatie.rent.car.model.CommentModel;
 import com.disertatie.rent.car.model.UserModel;
@@ -14,14 +12,12 @@ import com.disertatie.rent.car.model.enumType.UserRoleType;
 import com.disertatie.rent.car.service.CarService;
 import com.disertatie.rent.car.service.CommentService;
 import com.disertatie.rent.car.service.UserService;
-import com.disertatie.rent.car.transformers.utils.ColorUtilsAndroid;
+import com.disertatie.rent.car.transformers.utils.ColorUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.xml.bind.DatatypeConverter;
-import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -195,7 +191,7 @@ public class DataGenerator {
             carModel.setInsurance(generateRandomInsurance());
             carModel.setHorsePower(generateRandomHorsePower());
             carModel.setColor(generateRandomColor());
-            carModel.setHexColor(ColorUtilsAndroid.colorToHex(carModel.getColor()));
+            carModel.setHexColor(ColorUtils.colorToHex(carModel.getColor()));
             carModel.setPhoto(generatePictureCar(carModel.getBrand(), carModel.getModel()));
 
             try {
@@ -221,7 +217,7 @@ public class DataGenerator {
                         filePath = "pictures/BMW-2SeriesConvertible.jpg";
                         break;
                     case "2 Series Gran Coupe":
-                        filePath= "pictures/BMW-2SeriesGranCoupe.jpg";
+                        filePath = "pictures/BMW-2SeriesGranCoupe.jpg";
                         break;
                     case "3 Series Sedan":
                         filePath = "pictures/BMW-3SeriesSedan.jpg";
@@ -232,7 +228,7 @@ public class DataGenerator {
                 }
                 break;
             case "Audi":
-                switch (model){
+                switch (model) {
                     case "A1":
                         filePath = "pictures/Audi-A1.jpg";
                         break;
@@ -260,7 +256,7 @@ public class DataGenerator {
                 }
                 break;
             case "Ford":
-                switch (model){
+                switch (model) {
                     case "Fiesta":
                         filePath = "pictures/Ford-Fiesta.jpg";
                         break;
@@ -288,7 +284,7 @@ public class DataGenerator {
                 }
                 break;
             case "Dacia":
-                switch (model){
+                switch (model) {
                     case "1300":
                         filePath = "pictures/Dacia-1300.jpg";
                         break;
@@ -313,7 +309,7 @@ public class DataGenerator {
                 }
                 break;
             case "Mercedes-Benz":
-                switch (model){
+                switch (model) {
                     case "A-Class":
                         filePath = "pictures/Mercedes-Benz-A-Class.jpg";
                         break;
@@ -335,7 +331,7 @@ public class DataGenerator {
                 }
                 break;
             case "Honda":
-                switch (model){
+                switch (model) {
                     case "Brio":
                         filePath = "pictures/Honda-Brio.jpg";
                         break;
@@ -360,7 +356,7 @@ public class DataGenerator {
                 }
                 break;
             case "Hyundai":
-                switch (model){
+                switch (model) {
                     case "i10":
                         filePath = "pictures/Hyundai-i10.jpg";
                         break;
@@ -385,7 +381,7 @@ public class DataGenerator {
                 }
                 break;
             case "Fiat":
-                switch (model){
+                switch (model) {
                     case "Mobi":
                         filePath = "pictures/Fiat-Mobi.jpg";
                         break;
@@ -429,12 +425,13 @@ public class DataGenerator {
         }
         return null;
     }
+
     private Double generateRandomInsurance() {
         return (double) ThreadLocalRandom.current().nextInt(10, 30);
     }
 
     private Double generateRandomHorsePower() {
-        return (double) ThreadLocalRandom.current().nextInt(70, 180);
+        return (double) ThreadLocalRandom.current().nextInt(90, 110);
     }
 
 
@@ -444,7 +441,7 @@ public class DataGenerator {
     }
 
     private Double generateRandomPricePerDay() {
-        return (double) ThreadLocalRandom.current().nextInt(10, 50);
+        return (double) ThreadLocalRandom.current().nextInt(25, 35);
     }
 
     private boolean generateRandomConditionalAir() {
@@ -473,7 +470,7 @@ public class DataGenerator {
     }
 
     private Integer generateRandomFabricationYear() {
-        return ThreadLocalRandom.current().nextInt(2000, 2020);
+        return ThreadLocalRandom.current().nextInt(2007, 2013);
     }
 
     private String pickRandomModel(String brand) {

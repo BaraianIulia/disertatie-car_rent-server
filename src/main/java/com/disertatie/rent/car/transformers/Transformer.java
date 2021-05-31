@@ -7,7 +7,7 @@ import com.disertatie.rent.car.repository.CarRepository;
 import com.disertatie.rent.car.repository.RentDetailRepository;
 import com.disertatie.rent.car.repository.UserRepository;
 import com.disertatie.rent.car.service.passwordEncoder.PasswordEncoder;
-import com.disertatie.rent.car.transformers.utils.ColorUtilsAndroid;
+import com.disertatie.rent.car.transformers.utils.ColorUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -136,7 +136,7 @@ public class Transformer {
         }
         if (null != carModel.getColor()) {
             car.setColor(carModel.getColor());
-            car.setHexColor(ColorUtilsAndroid.colorToHex(carModel.getColor()));
+            car.setHexColor(ColorUtils.colorToHex(carModel.getColor()));
         }
         car.setConditionalAir(carModel.isConditionalAir());
         if (carModel.getFuelType().toLowerCase().contains("diesel")) {

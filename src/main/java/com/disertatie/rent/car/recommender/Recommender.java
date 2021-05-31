@@ -1,18 +1,15 @@
 package com.disertatie.rent.car.recommender;
 
+import com.disertatie.rent.car.controller.CarController;
 import com.disertatie.rent.car.exceptions.ExceptionNotFound;
 import com.disertatie.rent.car.model.CarModel;
 import com.disertatie.rent.car.model.CarQuizzModel;
 import com.disertatie.rent.car.model.CommentModel;
 import com.disertatie.rent.car.model.UserModel;
-import com.disertatie.rent.car.service.CarService;
-import com.disertatie.rent.car.service.CommentService;
-import com.disertatie.rent.car.service.UserService;
 import com.disertatie.rent.car.service.impl.CarServiceImp;
 import com.disertatie.rent.car.service.impl.CommentServiceImpl;
 import com.disertatie.rent.car.service.impl.UserServiceImp;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
+import com.disertatie.rent.car.transformers.utils.ColorUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +19,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service(value = "recommender")
 @Transactional
 public class Recommender {
 
+    private final static Logger LOGGER = Logger.getLogger(Recommender.class.getName());
 
     @Resource(name = "carService")
     private CarServiceImp carService;
@@ -59,6 +58,7 @@ public class Recommender {
 
         filterCarList(carQuizzModel);
 
+        LOGGER.info("Filtered Car List: " + filteredCarList.size());
         centeredCosineForCurrentUser();
         normCurrentUser = norm(centeredCosineForCurrentUser);
         calculateRecommendation();
@@ -89,17 +89,21 @@ public class Recommender {
     }
 
     private void calculateRecommendation() {
-        for (int i =0; i< filteredCarList.size(); i++)
-         {
-            CommentModel userCommentForCar = commentService.getUserCommentByCarId(user.getEmail(), filteredCarList.get(i).getId());
-            if (userCommentForCar.getAuthorEmail() == null) {
+        for (int i = 0; i < filteredCarList.size(); i++) {
+            List<CommentModel> userCommentForCar = commentService.getUserCommentByCarId(user.getEmail(), filteredCarList.get(i).getId());
+            if (userCommentForCar.size() == 0) {
+                centeredSimilarity = new HashMap<>();
                 calculateCarRating(filteredCarList.get(i));
                 double finalRating = getMostSimilarUsers();
-                if ( finalRating >= 4.0){
+                LOGGER.info("FINAL RATING : " + finalRating);
+                LOGGER.info("FOR CAR : " + filteredCarList.get(i).getId());
+                if (finalRating < 3.8) {
                     filteredCarList.remove(filteredCarList.get(i));
-                    i--;}
+                    i--;
+                }
             } else {
-                if (userCommentForCar.getRating() < 4) {
+                double averageRating = userCommentForCar.stream().mapToDouble(CommentModel::getRating).sum() / userCommentForCar.size();
+                if (averageRating < 4) {
                     filteredCarList.remove(filteredCarList.get(i));
                     i--;
                 }
@@ -121,18 +125,20 @@ public class Recommender {
 
     private void concatenateCommentsForTheSameCar() {
         long averageRating;
-        for (CommentModel commentModel : usersRatings) {
+        for (int i = 0; i < usersRatings.size(); i++) {
+            int finalI = i;
             List<CommentModel> commentsOnSameCar = usersRatings.stream()
-                    .filter(x -> x.getCarId() == commentModel.getCarId())
+                    .filter(x -> x.getCarId() == usersRatings.get(finalI).getCarId() && x.getAuthorEmail().equals(usersRatings.get(finalI).getAuthorEmail()))
                     .collect(Collectors.toList());
-            if (commentsOnSameCar.size() > 0) {
-                averageRating = commentsOnSameCar.stream().mapToLong(CommentModel::getRating).sum();
+            if (commentsOnSameCar.size() > 1) {
+                averageRating = commentsOnSameCar.stream().mapToLong(CommentModel::getRating).sum() / commentsOnSameCar.size();
                 CommentModel commentModelAverage = commentsOnSameCar.get(0);
                 commentModelAverage.setRating(averageRating);
                 for (CommentModel comm : commentsOnSameCar) {
                     usersRatings.remove(comm);
                 }
                 usersRatings.add(commentModelAverage);
+                i--;
             }
         }
     }
@@ -165,7 +171,8 @@ public class Recommender {
         for (Map.Entry<Long, Double> entry : centeredCosineForCarsUser.entrySet()) {
             userMultiplyCurrentUser = userMultiplyCurrentUser + entry.getValue() * centeredCosineForCurrentUser.get(entry.getKey());
         }
-        centeredSimilarity.put(authorEmail, norm(centeredCosineForCarsUser));
+        double similarityFormula = userMultiplyCurrentUser / (normCurrentUser * norm(centeredCosineForCarsUser));
+        centeredSimilarity.put(authorEmail, similarityFormula);
 
     }
 
@@ -179,7 +186,7 @@ public class Recommender {
 
     private double getMostSimilarUsers() {
         List<String> mostSimilarUsers = new ArrayList<>();
-        if(centeredSimilarity.size() == 0){
+        if (centeredSimilarity.size() == 0) {
             return 1;
         }
         for (Map.Entry<String, Double> entry : centeredSimilarity.entrySet()) {
@@ -187,10 +194,10 @@ public class Recommender {
                 mostSimilarUsers.add(entry.getKey());
             }
         }
-        if (mostSimilarUsers.size() >= centeredSimilarity.size()*0.1) {
+        if (mostSimilarUsers.size() >= centeredSimilarity.size() * 0.2) {
             return calculateFinalCarRatingValue(mostSimilarUsers);
         } else {
-            similarityDistance = similarityDistance + 0.1;
+            similarityDistance = similarityDistance + 0.2;
             getMostSimilarUsers();
         }
         return 1;
@@ -206,7 +213,7 @@ public class Recommender {
 
         for (CommentModel comment : mostSimmilarComments) {
             ratingSum = ratingSum + centeredSimilarity.get(comment.getAuthorEmail()) * comment.getRating();
-            numberOfRatings = centeredSimilarity.get(comment.getAuthorEmail());
+            numberOfRatings = centeredSimilarity.get(comment.getAuthorEmail()) + numberOfRatings;
         }
         return ratingSum / numberOfRatings;
     }
@@ -214,9 +221,23 @@ public class Recommender {
     private void filterCarList(CarQuizzModel carQuizzModel) {
         if (carQuizzModel.getStartDate() != null && carQuizzModel.getEndDate() != null) {
             filteredCarList = carService.getAllCars(carQuizzModel.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), carQuizzModel.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-        }else
-        {
-            filteredCarList= carService.getAllCars(null, null);
+        } else {
+            filteredCarList = carService.getAllCars(null, null);
+        }
+        if (carQuizzModel.getColor() != null) {
+            if (carQuizzModel.getColor().size() == 1) {
+                if (carQuizzModel.getColor().get(0).toLowerCase().contains("dark")) {
+                    filteredCarList =
+                            filteredCarList.stream()
+                                    .filter(e -> ColorUtils.isDarkColor(e.getColor()))
+                                    .collect(Collectors.toList());
+                } else {
+                    filteredCarList =
+                            filteredCarList.stream()
+                                    .filter(e -> !ColorUtils.isDarkColor(e.getColor()))
+                                    .collect(Collectors.toList());
+                }
+            }
         }
         if (carQuizzModel.getBrand().size() > 0) {
             filteredCarList =

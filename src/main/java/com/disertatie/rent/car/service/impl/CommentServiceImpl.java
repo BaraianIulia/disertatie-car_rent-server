@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service(value = "commentService")
@@ -104,12 +107,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentModel getUserCommentByCarId(String authorEmail, Long carId) {
-        Optional<Comment> optionalComment = commentRepository.getCommentByAuthorEmailAndCarId(authorEmail, carId);
-        if (optionalComment.isPresent()) {
-            return transformer.transformEntityToModel(optionalComment.get());
+    public List<CommentModel> getUserCommentByCarId(String authorEmail, Long carId) {
+        List<Comment> commentList = commentRepository.getCommentByAuthorEmailAndCarId(authorEmail, carId);
+        List<CommentModel> commentModelList = new ArrayList<>();
+        for (Comment comment : commentList) {
+            commentModelList.add(transformer.transformEntityToModel(comment));
         }
-        return new CommentModel();
+        return commentModelList;
 
     }
 
