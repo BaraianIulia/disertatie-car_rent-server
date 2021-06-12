@@ -12,4 +12,5 @@ public interface CarTotalRatingRepository extends JpaRepository<CarTotalRating, 
 
     @Query(value = "SELECT * FROM CAR_TOTAL_RATINGS c WHERE c.car_id = :carId", nativeQuery = true)
     Optional<CarTotalRating> getByCarId(Long carId);
+
 }

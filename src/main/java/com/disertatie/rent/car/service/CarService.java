@@ -28,4 +28,6 @@ public interface CarService {
     Car getCarEntity(String vehicleIdentificationNumber) throws ExceptionNotFound;
 
     void updateCar(Car car) throws ExceptionNotFound;
+
+    List<CarModel> getCarTopCar();
 }

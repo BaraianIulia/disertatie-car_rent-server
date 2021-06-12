@@ -33,6 +33,11 @@ public class SimilarityValueServiceImp implements SimilarityValueService {
     }
 
     @Override
+    public List<SimilarityValue> getByCarId(long carId) {
+        return similarityValueRepository.getAllByCarId(carId);
+    }
+
+    @Override
     public double getRatingByUserIdAndCarId(long userId, long carId) {
         Optional<SimilarityValue> similarityValueOptional = similarityValueRepository.getBySimilarityForUserAndCarId(userId, carId);
         if (similarityValueOptional.isPresent()) {

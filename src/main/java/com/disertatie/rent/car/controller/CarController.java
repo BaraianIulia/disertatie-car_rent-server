@@ -84,4 +84,9 @@ public class CarController {
         return ResponseEntity.ok().body(carService.getCarQuizz(userId, carQuizzModel));
     }
 
+    @GetMapping(path = "/top", produces = "application/json")
+    public ResponseEntity<List<CarModel>> getTopCar() {
+        LOGGER.info("CarController : getTopCar()");
+        return ResponseEntity.ok().body(carService.getCarTopCar());
+    }
 }

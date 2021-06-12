@@ -42,7 +42,7 @@ public class CarServiceImp implements CarService {
         List<CarModel> carListModel = new ArrayList<>();
         List<Car> carList = carRepository.findAll();
         if (startDate != null && endDate != null) {
-           carList = carList.stream().filter(x -> checkCarForAvailability(x.getId(), startDate, endDate)).collect(Collectors.toList());
+           carList = carList.stream().filter(x -> checkCarForAvailability(x.getId(), startDate, endDate) == true).collect(Collectors.toList());
         }
         for (Car car : carList) {
             carListModel.add(transformer.transformEntityToModel(car));
@@ -158,5 +158,15 @@ public class CarServiceImp implements CarService {
         } else {
             throw new ExceptionNotFound("Car with vehicle file identification number: " + car.getVehicleIdentificationNumber() + " does not exist.");
         }
+    }
+
+    @Override
+    public List<CarModel> getCarTopCar() {
+        List<Car> carList = carRepository.findTop3();
+        List<CarModel> carListModel = new ArrayList<>();
+        for (Car car : carList) {
+            carListModel.add(transformer.transformEntityToModel(car));
+        }
+        return carListModel;
     }
 }

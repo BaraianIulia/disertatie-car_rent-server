@@ -11,5 +11,7 @@ public interface SimilarityValueService {
 
     List<SimilarityValue> getAll();
 
+    List<SimilarityValue> getByCarId(long carId);
+
     double getRatingByUserIdAndCarId(long userId, long carId);
 }

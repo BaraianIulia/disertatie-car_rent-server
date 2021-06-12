@@ -1,5 +1,7 @@
 package com.disertatie.rent.car.dataGenerator;
 
+import com.disertatie.rent.car.entities.CarTotalRating;
+import com.disertatie.rent.car.entities.SimilarityValue;
 import com.disertatie.rent.car.exceptions.ExceptionExistingCar;
 import com.disertatie.rent.car.exceptions.ExceptionExistingUser;
 import com.disertatie.rent.car.model.CarModel;
@@ -9,9 +11,12 @@ import com.disertatie.rent.car.model.enumType.CommentType;
 import com.disertatie.rent.car.model.enumType.FuelType;
 import com.disertatie.rent.car.model.enumType.GearboxType;
 import com.disertatie.rent.car.model.enumType.UserRoleType;
+import com.disertatie.rent.car.repository.CarTotalRatingRepository;
 import com.disertatie.rent.car.service.CarService;
 import com.disertatie.rent.car.service.CommentService;
+import com.disertatie.rent.car.service.SimilarityValueService;
 import com.disertatie.rent.car.service.UserService;
+import com.disertatie.rent.car.transformers.Transformer;
 import com.disertatie.rent.car.transformers.utils.ColorUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.ClassPathResource;
@@ -24,6 +29,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Component(value = "dataGenerator")
 public class DataGenerator {
@@ -34,9 +40,17 @@ public class DataGenerator {
     @Resource(name = "userService")
     private UserService userService;
 
+    @Resource(name = "similarityValueService")
+    private SimilarityValueService similarityValueService;
 
     @Resource(name = "commentService")
     private CommentService commentService;
+
+    @Resource(name = "transformer")
+    private Transformer transformer;
+
+    @Resource(name = "carTotalRatingRepository")
+    private CarTotalRatingRepository carTotalRatingRepository;
 
     private List<String> brandList = Arrays.asList("BMW", "Audi", "Ford", "Dacia", "Mercedes-Benz", "Honda", "Hyundai", "Fiat");
     private List<String> modelBMWList = Arrays.asList("1 Series", "2 Series Convertible", "2 Series Gran Coupe", "3 Series Sedan", "4 Series Convertible");
@@ -92,6 +106,23 @@ public class DataGenerator {
             commentModel.setStatus(CommentType.APPROVED.toString());
             commentModel.setText(generateRandomText(commentModel.getRating()));
             commentService.addComment(commentModel);
+        }
+    }
+
+    public void calculateRating() {
+        List<CarModel> carModelList = carService.getAllCars(null, null);
+        for (CarModel car: carModelList
+             ) {
+            List<CommentModel> commentModelList = commentService.getCommentsByCarId(car.getId());
+            if(commentModelList.size() > 0) {
+                int size = commentModelList.size();
+                int sum = commentModelList.stream().map(CommentModel::getRating).mapToInt(Long::intValue).sum();
+                CarTotalRating carTotalRating = new CarTotalRating();
+                carTotalRating.setCar(transformer.transformModelToEntity(car));
+                carTotalRating.setRating((long) (sum / size));
+                carTotalRatingRepository.save(carTotalRating);
+            }
+
         }
     }
 
