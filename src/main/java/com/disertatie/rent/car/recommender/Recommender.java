@@ -1,11 +1,12 @@
 package com.disertatie.rent.car.recommender;
 
-import com.disertatie.rent.car.controller.CarController;
+import com.disertatie.rent.car.entities.SimilarityValue;
 import com.disertatie.rent.car.exceptions.ExceptionNotFound;
 import com.disertatie.rent.car.model.CarModel;
 import com.disertatie.rent.car.model.CarQuizzModel;
 import com.disertatie.rent.car.model.CommentModel;
 import com.disertatie.rent.car.model.UserModel;
+import com.disertatie.rent.car.service.SimilarityValueService;
 import com.disertatie.rent.car.service.impl.CarServiceImp;
 import com.disertatie.rent.car.service.impl.CommentServiceImpl;
 import com.disertatie.rent.car.service.impl.UserServiceImp;
@@ -37,6 +38,9 @@ public class Recommender {
     @Resource(name = "commentService")
     private CommentServiceImpl commentService;
 
+    @Resource(name = "similarityValueService")
+    private SimilarityValueService similarityValueService;
+
     private UserModel user;
     private List<CarModel> filteredCarList = new ArrayList<>();
     private Map<Long, Double> centeredCosineForCurrentUser = new HashMap<>();
@@ -44,6 +48,7 @@ public class Recommender {
     private Map<String, Double> centeredSimilarity = new HashMap<>();
     private double similarityDistance = 0.2;
     private List<CommentModel> usersRatings;
+    private List<CarModel> filteredCarListJob = new ArrayList<>();
 
     public Recommender() {
     }
@@ -54,16 +59,33 @@ public class Recommender {
         if (carQuizzModel == null)
             return null;
 
-        user = userService.getUserById(userId);
+        UserModel userModel = userService.getUserById(userId);
 
         filterCarList(carQuizzModel);
-
-        LOGGER.info("Filtered Car List: " + filteredCarList.size());
-        centeredCosineForCurrentUser();
-        normCurrentUser = norm(centeredCosineForCurrentUser);
-        calculateRecommendation();
+        for (int i = 0; i < filteredCarList.size(); i++) {
+            double rating = similarityValueService.getRatingByUserIdAndCarId(userModel.getId(), filteredCarList.get(i).getId());
+            if (rating < 3.5) {
+                filteredCarList.remove(i);
+                i--;
+            }
+        }
 
         return filteredCarList;
+    }
+
+    public void calculateSimilarity() {
+        similarityValueService.deleteAll();
+        filteredCarListJob = carService.getAllCars(null, null);
+        List<UserModel> userListJob = userService.getAllUsers();
+        for (UserModel user : userListJob
+        ) {
+            LOGGER.info("Calculate similarity for user: " + user.getSurname() + " " + user.getId());
+            this.user = user;
+            centeredCosineForCurrentUser();
+            normCurrentUser = norm(centeredCosineForCurrentUser);
+            calculateRecommendation();
+        }
+
     }
 
     private void centeredCosineForCurrentUser() {
@@ -89,24 +111,28 @@ public class Recommender {
     }
 
     private void calculateRecommendation() {
-        for (int i = 0; i < filteredCarList.size(); i++) {
-            List<CommentModel> userCommentForCar = commentService.getUserCommentByCarId(user.getEmail(), filteredCarList.get(i).getId());
+        for (int i = 0; i < filteredCarListJob.size(); i++) {
+            List<CommentModel> userCommentForCar = commentService.getUserCommentByCarId(user.getEmail(), filteredCarListJob.get(i).getId());
             if (userCommentForCar.size() == 0) {
                 centeredSimilarity = new HashMap<>();
-                calculateCarRating(filteredCarList.get(i));
+                similarityDistance = 0.2;
+                calculateCarRating(filteredCarListJob.get(i));
                 double finalRating = getMostSimilarUsers();
-                LOGGER.info("FINAL RATING : " + finalRating);
-                LOGGER.info("FOR CAR : " + filteredCarList.get(i).getId());
-                if (finalRating < 3.8) {
-                    filteredCarList.remove(filteredCarList.get(i));
-                    i--;
-                }
+                LOGGER.info("Final rating for user and car: " + user.getId() + " " + this.filteredCarListJob.get(i).getId() + " " + finalRating);
+                SimilarityValue similarityValue = new SimilarityValue();
+                similarityValue.setCarId(filteredCarListJob.get(i).getId());
+                similarityValue.setSimilarityForUser(user.getId());
+                similarityValue.setValue(finalRating);
+                similarityValueService.save(similarityValue);
+
             } else {
                 double averageRating = userCommentForCar.stream().mapToDouble(CommentModel::getRating).sum() / userCommentForCar.size();
-                if (averageRating < 4) {
-                    filteredCarList.remove(filteredCarList.get(i));
-                    i--;
-                }
+                LOGGER.info("Final rating for user and car: " + user.getId() + " " + this.filteredCarListJob.get(i).getId() + " " + averageRating);
+                SimilarityValue similarityValue = new SimilarityValue();
+                similarityValue.setCarId(filteredCarListJob.get(i).getId());
+                similarityValue.setSimilarityForUser(user.getId());
+                similarityValue.setValue(averageRating);
+                similarityValueService.save(similarityValue);
             }
         }
     }

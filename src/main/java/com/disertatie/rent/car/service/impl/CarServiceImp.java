@@ -12,12 +12,9 @@ import com.disertatie.rent.car.service.CarService;
 import com.disertatie.rent.car.transformers.Transformer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,11 +40,9 @@ public class CarServiceImp implements CarService {
     @Override
     public List<CarModel> getAllCars(LocalDate startDate, LocalDate endDate) {
         List<CarModel> carListModel = new ArrayList<>();
-        List<Car> carList;
+        List<Car> carList = carRepository.findAll();
         if (startDate != null && endDate != null) {
-            carList = carRepository.getAllNotBetweenDates(startDate, endDate);
-        } else {
-            carList = carRepository.findAll();
+           carList = carList.stream().filter(x -> checkCarForAvailability(x.getId(), startDate, endDate)).collect(Collectors.toList());
         }
         for (Car car : carList) {
             carListModel.add(transformer.transformEntityToModel(car));
@@ -141,7 +136,7 @@ public class CarServiceImp implements CarService {
 //        for (Car car : carList) {
 //            carListModel.add(transformer.transformEntityToModel(car));
 //        }
-        return  recommender.getRecommendation(userId, carQuizzModel);
+        return recommender.getRecommendation(userId, carQuizzModel);
     }
 
     @Override

@@ -58,6 +58,17 @@
         </dependency>
         <!-- Thanks for using https://jar-download.com -->
 
+        <!-- https://mvnrepository.com/artifact/org.springframework.batch/spring-batch-core -->
+        <dependency>
+            <groupId>org.springframework.batch</groupId>
+            <artifactId>spring-batch-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>com.harium.android</groupId>

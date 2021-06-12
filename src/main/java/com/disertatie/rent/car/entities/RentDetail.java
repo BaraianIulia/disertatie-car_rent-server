@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @Setter
-@Table(name = "rent_details")
+@Table(name = "rent_details", indexes = {@Index(name = "IDX_Start_End_Date", columnList = "start_date,end_date")})
 public class RentDetail {
 
     @Id
