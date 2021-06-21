@@ -6,6 +6,7 @@ import com.disertatie.rent.car.model.CarModel;
 import com.disertatie.rent.car.model.CarQuizzModel;
 import com.disertatie.rent.car.model.CommentModel;
 import com.disertatie.rent.car.model.UserModel;
+import com.disertatie.rent.car.repository.Repo;
 import com.disertatie.rent.car.service.SimilarityValueService;
 import com.disertatie.rent.car.service.impl.CarServiceImp;
 import com.disertatie.rent.car.service.impl.CommentServiceImpl;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,6 +42,9 @@ public class Recommender {
 
     @Resource(name = "similarityValueService")
     private SimilarityValueService similarityValueService;
+
+    @Resource(name = "repo")
+    private Repo repo;
 
     private UserModel user;
     private List<CarModel> filteredCarList = new ArrayList<>();
@@ -245,11 +250,13 @@ public class Recommender {
     }
 
     private void filterCarList(CarQuizzModel carQuizzModel) {
-        if (carQuizzModel.getStartDate() != null && carQuizzModel.getEndDate() != null) {
-            filteredCarList = carService.getAllCars(carQuizzModel.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), carQuizzModel.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-        } else {
-            filteredCarList = carService.getAllCars(null, null);
-        }
+
+        filteredCarList = repo.findAllFiltered(carQuizzModel);
+//        if (carQuizzModel.getStartDate() != null && carQuizzModel.getEndDate() != null) {
+//            filteredCarList = carService.getAllCars(carQuizzModel.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), carQuizzModel.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+//        } else {
+//            filteredCarList = carService.getAllCars(null, null);
+//        }
         if (carQuizzModel.getColor() != null) {
             if (carQuizzModel.getColor().size() == 1) {
                 if (carQuizzModel.getColor().get(0).toLowerCase().contains("dark")) {
@@ -265,31 +272,37 @@ public class Recommender {
                 }
             }
         }
-        if (carQuizzModel.getBrand().size() > 0) {
-            filteredCarList =
-                    filteredCarList.stream()
-                            .filter(e -> carQuizzModel.getBrand().stream().anyMatch(name -> name.equals(e.getBrand())))
-                            .collect(Collectors.toList());
+        if (carQuizzModel.getStartDate() != null && carQuizzModel.getEndDate() != null) {
+            LocalDate startDate = carQuizzModel.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate endDate = carQuizzModel.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            filteredCarList = filteredCarList.stream().filter(x -> carService.checkCarForAvailability(x.getId(), startDate, endDate) == true).collect(Collectors.toList());
         }
-        if (carQuizzModel.getFabricationYear() != null) {
-            filteredCarList = filteredCarList.stream()
-                    .filter(c -> c.getFabricationYear() >= carQuizzModel.getFabricationYear() - 2 && c.getFabricationYear() <= carQuizzModel.getFabricationYear() + 2)
-                    .collect(Collectors.toList());
-        }
-        if (carQuizzModel.getPricePerDay() != null) {
-            filteredCarList = filteredCarList.stream()
-                    .filter(c -> c.getPricePerDay() >= carQuizzModel.getPricePerDay() - 5 && c.getPricePerDay() <= carQuizzModel.getPricePerDay() + 5)
-                    .collect(Collectors.toList());
-        }
-        if (carQuizzModel.getHorsePower() != null) {
-            filteredCarList = filteredCarList.stream()
-                    .filter(c -> c.getHorsePower() >= carQuizzModel.getHorsePower() - 10 && c.getHorsePower() <= carQuizzModel.getHorsePower() + 10)
-                    .collect(Collectors.toList());
-        }
-        if (carQuizzModel.getSeats() != null) {
-            filteredCarList = filteredCarList.stream()
-                    .filter(c -> c.getSeats() >= carQuizzModel.getSeats() && c.getSeats() <= carQuizzModel.getSeats() + 2)
-                    .collect(Collectors.toList());
-        }
+
+//        if (carQuizzModel.getBrand().size() > 0) {
+//            filteredCarList =
+//                    filteredCarList.stream()
+//                            .filter(e -> carQuizzModel.getBrand().stream().anyMatch(name -> name.equals(e.getBrand())))
+//                            .collect(Collectors.toList());
+//        }
+//        if (carQuizzModel.getFabricationYear() != null) {
+//            filteredCarList = filteredCarList.stream()
+//                    .filter(c -> c.getFabricationYear() >= carQuizzModel.getFabricationYear() - 2 && c.getFabricationYear() <= carQuizzModel.getFabricationYear() + 2)
+//                    .collect(Collectors.toList());
+//        }
+//        if (carQuizzModel.getPricePerDay() != null) {
+//            filteredCarList = filteredCarList.stream()
+//                    .filter(c -> c.getPricePerDay() >= carQuizzModel.getPricePerDay() - 5 && c.getPricePerDay() <= carQuizzModel.getPricePerDay() + 5)
+//                    .collect(Collectors.toList());
+//        }
+//        if (carQuizzModel.getHorsePower() != null) {
+//            filteredCarList = filteredCarList.stream()
+//                    .filter(c -> c.getHorsePower() >= carQuizzModel.getHorsePower() - 10 && c.getHorsePower() <= carQuizzModel.getHorsePower() + 10)
+//                    .collect(Collectors.toList());
+//        }
+//        if (carQuizzModel.getSeats() != null) {
+//            filteredCarList = filteredCarList.stream()
+//                    .filter(c -> c.getSeats() >= carQuizzModel.getSeats() && c.getSeats() <= carQuizzModel.getSeats() + 2)
+//                    .collect(Collectors.toList());
+//        }
     }
 }
