@@ -22,4 +22,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> getAllByCarId(Long carId);
 
     List<Comment> getAllByAuthorEmail(String authorEmail);
+
+    @Query(value = "SELECT * FROM COMMENTS c WHERE c.author_email = :authorEmail and c.car_id IN (:carIds)", nativeQuery = true)
+    List<Comment> getAllByAuthorEmailAndIds(String authorEmail, List<Long> carIds);
 }

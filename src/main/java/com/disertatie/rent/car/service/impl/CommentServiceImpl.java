@@ -127,4 +127,13 @@ public class CommentServiceImpl implements CommentService {
         return commentModelList;
     }
 
+    public List<CommentModel> getAllUserComentsByIds(String authorEmail, List<Long> carIds){
+        List<Comment> commentList = commentRepository.getAllByAuthorEmailAndIds(authorEmail, carIds);
+        List<CommentModel> commentModelList = new ArrayList<>();
+        for (Comment comment : commentList) {
+            commentModelList.add(transformer.transformEntityToModel(comment));
+        }
+        return commentModelList;
+    }
+
 }

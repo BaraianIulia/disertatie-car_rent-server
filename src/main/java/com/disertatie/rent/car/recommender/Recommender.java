@@ -46,14 +46,14 @@ public class Recommender {
     @Resource(name = "repo")
     private Repo repo;
 
-    private UserModel user;
     private List<CarModel> filteredCarList = new ArrayList<>();
-    private Map<Long, Double> centeredCosineForCurrentUser = new HashMap<>();
-    private double normCurrentUser;
-    private Map<String, Double> centeredSimilarity = new HashMap<>();
-    private double similarityDistance = 0.2;
-    private List<CommentModel> usersRatings;
+    private Map<Long, Double> centeredCosineForCurrentCar = new HashMap<>();
+    private double normCurrentCar;
+    private Map<Long, Double> centeredSimilarity = new HashMap<>();
+    private double similarityDistance = 0;
+    private List<CommentModel> usersRatings = new ArrayList<>();
     private List<CarModel> filteredCarListJob = new ArrayList<>();
+    private CarModel car;
 
     public Recommender() {
     }
@@ -81,80 +81,111 @@ public class Recommender {
     public void calculateSimilarity() {
         similarityValueService.deleteAll();
         filteredCarListJob = carService.getAllCars(null, null);
-        List<UserModel> userListJob = userService.getAllUsers();
-        for (UserModel user : userListJob
-        ) {
-            LOGGER.info("Calculate similarity for user: " + user.getSurname() + " " + user.getId());
-            this.user = user;
-            centeredCosineForCurrentUser();
-            normCurrentUser = norm(centeredCosineForCurrentUser);
+        for (int i = 0; i < filteredCarListJob.size(); i++) {
+            LOGGER.info("Calculate similarity for user: " + filteredCarListJob.get(i).getId() + " " + filteredCarListJob.get(i).getModel() + " " + filteredCarListJob.get(i).getBrand());
+            this.car = filteredCarListJob.get(i);
+            centeredCosineForCurrentCar();
+            normCurrentCar = norm(centeredCosineForCurrentCar);
+            calculate(filteredCarListJob.get(i));
             calculateRecommendation();
         }
 
     }
 
-    private void centeredCosineForCurrentUser() {
+    private void calculate(CarModel car) {
+        centeredSimilarity = new HashMap<>();
+        List<CarModel> carModelList = filteredCarListJob;
+        carModelList.remove(car);
+        for (CarModel carModel : filteredCarListJob
+        ) {
+            calculateCarRating(carModel);
+        }
+    }
+
+    private void centeredCosineForCurrentCar() {
         double sum = 0;
         int noOfRatings = 0;
         double mediaAritmetica;
 
-        List<CommentModel> userComments = commentService.getAllUserCommentsByAuthorEmail(user.getEmail());
-        List<CarModel> carList = carService.getAllCars(null, null);
+
+        List<CommentModel> userComments = commentService.getAllByCarId(car.getId());
+        concatenateCommentsForTheSameCar(userComments);
+        List<UserModel> userModelList = userService.getAllUsers();
         for (CommentModel userComment : userComments) {
             sum = sum + userComment.getRating();
             noOfRatings = noOfRatings + 1;
         }
         mediaAritmetica = sum / noOfRatings;
-        for (CarModel car : carList
+        for (UserModel userModel : userModelList
         ) {
-            if (userComments.stream().anyMatch(x -> x.getCarId() == car.getId())) {
-                centeredCosineForCurrentUser.put(car.getId(), userComments.stream().filter(x -> x.getCarId() == car.getId()).collect(Collectors.toList()).get(0).getRating() - mediaAritmetica);
+            if (userComments.stream().anyMatch(x -> x.getAuthorEmail().equals(userModel.getEmail()))) {
+                centeredCosineForCurrentCar.put(userModel.getId(), userComments.stream().filter(x -> x.getAuthorEmail().equals(userModel.getEmail())).collect(Collectors.toList()).get(0).getRating() - mediaAritmetica);
             } else {
-                centeredCosineForCurrentUser.put(car.getId(), (double) 0);
+                centeredCosineForCurrentCar.put(userModel.getId(), (double) 0);
             }
         }
     }
 
     private void calculateRecommendation() {
-        for (int i = 0; i < filteredCarListJob.size(); i++) {
-            List<CommentModel> userCommentForCar = commentService.getUserCommentByCarId(user.getEmail(), filteredCarListJob.get(i).getId());
-            if (userCommentForCar.size() == 0) {
-                centeredSimilarity = new HashMap<>();
-                similarityDistance = 0.2;
-                calculateCarRating(filteredCarListJob.get(i));
-                double finalRating = getMostSimilarUsers();
-                LOGGER.info("Final rating for user and car: " + user.getId() + " " + this.filteredCarListJob.get(i).getId() + " " + finalRating);
+        List<UserModel> userModelList = userService.getAllUsers();
+        for (UserModel userModel : userModelList) {
+            List<CommentModel> commentModelList = commentService.getUserCommentByCarId(userModel.getEmail(), this.car.getId());
+            if (commentModelList.size() > 0) {
+                double averageRating = commentModelList.stream().mapToDouble(CommentModel::getRating).sum() / commentModelList.size();
+                LOGGER.info("Final rating for user and car: " + " " + this.car.getId() + userModel.getEmail() + " " + averageRating);
                 SimilarityValue similarityValue = new SimilarityValue();
-                similarityValue.setCarId(filteredCarListJob.get(i).getId());
-                similarityValue.setSimilarityForUser(user.getId());
-                similarityValue.setValue(finalRating);
-                similarityValueService.save(similarityValue);
-
-            } else {
-                double averageRating = userCommentForCar.stream().mapToDouble(CommentModel::getRating).sum() / userCommentForCar.size();
-                LOGGER.info("Final rating for user and car: " + user.getId() + " " + this.filteredCarListJob.get(i).getId() + " " + averageRating);
-                SimilarityValue similarityValue = new SimilarityValue();
-                similarityValue.setCarId(filteredCarListJob.get(i).getId());
-                similarityValue.setSimilarityForUser(user.getId());
+                similarityValue.setCarId(this.car.getId());
+                similarityValue.setSimilarityForUser(userModel.getId());
                 similarityValue.setValue(averageRating);
                 similarityValueService.save(similarityValue);
+            } else {
+
+                similarityDistance = 0;
+                double finalRating = getMostSimilarUsers(userModel);
+                LOGGER.info("Final rating for user and car: " + " " + this.car.getId() + userModel.getEmail() + " " + finalRating);
+                SimilarityValue similarityValue = new SimilarityValue();
+                similarityValue.setCarId(this.car.getId());
+                similarityValue.setSimilarityForUser(userModel.getId());
+                similarityValue.setValue(finalRating);
+                similarityValueService.save(similarityValue);
             }
+
         }
     }
 
 
     private void calculateCarRating(CarModel car) {
         usersRatings = commentService.getCommentsByCarId(car.getId());
-        concatenateCommentsForTheSameCar();
-        for (CommentModel comment : usersRatings
-        ) {
-            centeredCosine(comment.getAuthorEmail());
-        }
+        concatenateCommentsForTheSameCar(usersRatings);
+        centeredCosine(car);
 
 
     }
 
-    private void concatenateCommentsForTheSameCar() {
+    private void centeredCosine(CarModel car) {
+        double sum = 0;
+        int noOfRatings = 0;
+        double mediaAritmetica;
+
+        List<UserModel> userModelList = userService.getAllUsers();
+        for (CommentModel userComment : usersRatings) {
+            sum = sum + userComment.getRating();
+            noOfRatings = noOfRatings + 1;
+        }
+        mediaAritmetica = sum / noOfRatings;
+        Map<Long, Double> centeredCosine = new HashMap<>();
+        for (UserModel userModel : userModelList
+        ) {
+            if (usersRatings.stream().anyMatch(x -> x.getAuthorEmail().equals(userModel.getEmail()))) {
+                centeredCosine.put(userModel.getId(), usersRatings.stream().filter(x -> x.getAuthorEmail().equals(userModel.getEmail())).collect(Collectors.toList()).get(0).getRating() - mediaAritmetica);
+            } else {
+                centeredCosine.put(userModel.getId(), (double) 0);
+            }
+        }
+        cosineSimilarity(centeredCosine, car);
+    }
+
+    private void concatenateCommentsForTheSameCar(List<CommentModel> usersRatings) {
         long averageRating;
         for (int i = 0; i < usersRatings.size(); i++) {
             int finalI = i;
@@ -174,36 +205,13 @@ public class Recommender {
         }
     }
 
-    private void centeredCosine(String authorEmail) {
-        double sum = 0;
-        int noOfRatings = 0;
-        double mediaAritmetica;
-        Map<Long, Double> centeredCosineForCarsUser = new HashMap<>();
-        List<CommentModel> userComments = commentService.getAllUserCommentsByAuthorEmail(authorEmail);
-        List<CarModel> carList = carService.getAllCars(null, null);
-        for (CommentModel userComment : userComments) {
-            sum = sum + userComment.getRating();
-            noOfRatings = noOfRatings + 1;
-        }
-        mediaAritmetica = sum / noOfRatings;
-        for (CarModel car : carList
-        ) {
-            if (userComments.stream().anyMatch(x -> x.getCarId() == car.getId())) {
-                centeredCosineForCarsUser.put(car.getId(), userComments.stream().filter(x -> x.getCarId() == car.getId()).collect(Collectors.toList()).get(0).getRating() - mediaAritmetica);
-            } else {
-                centeredCosineForCarsUser.put(car.getId(), (double) 0);
-            }
-        }
-        cosineSimilarity(centeredCosineForCarsUser, authorEmail);
-    }
-
-    private void cosineSimilarity(Map<Long, Double> centeredCosineForCarsUser, String authorEmail) {
+    private void cosineSimilarity(Map<Long, Double> centeredCosineForCarsUser, CarModel car) {
         double userMultiplyCurrentUser = 0;
         for (Map.Entry<Long, Double> entry : centeredCosineForCarsUser.entrySet()) {
-            userMultiplyCurrentUser = userMultiplyCurrentUser + entry.getValue() * centeredCosineForCurrentUser.get(entry.getKey());
+            userMultiplyCurrentUser = userMultiplyCurrentUser + entry.getValue() * centeredCosineForCurrentCar.get(entry.getKey());
         }
-        double similarityFormula = userMultiplyCurrentUser / (normCurrentUser * norm(centeredCosineForCarsUser));
-        centeredSimilarity.put(authorEmail, similarityFormula);
+        double similarityFormula = userMultiplyCurrentUser / (normCurrentCar * norm(centeredCosineForCarsUser));
+        centeredSimilarity.put(car.getId(), similarityFormula);
 
     }
 
@@ -215,36 +223,36 @@ public class Recommender {
         return Math.sqrt(norm);
     }
 
-    private double getMostSimilarUsers() {
-        List<String> mostSimilarUsers = new ArrayList<>();
+    private double getMostSimilarUsers(UserModel userModel) {
+        List<Long> mostSimilarUsers = new ArrayList<>();
         if (centeredSimilarity.size() == 0) {
             return 1;
         }
-        for (Map.Entry<String, Double> entry : centeredSimilarity.entrySet()) {
-            if (entry.getValue() > normCurrentUser - similarityDistance && entry.getValue() < normCurrentUser + similarityDistance) {
-                mostSimilarUsers.add(entry.getKey());
+        while (mostSimilarUsers.size() <= centeredSimilarity.size() * 0.2) {
+            mostSimilarUsers = new ArrayList<>();
+            similarityDistance = similarityDistance + 0.2;
+            for (Map.Entry<Long, Double> entry : centeredSimilarity.entrySet()) {
+                if (entry.getValue() > normCurrentCar - similarityDistance && entry.getValue() < normCurrentCar + similarityDistance) {
+                    mostSimilarUsers.add(entry.getKey());
+                }
             }
         }
-        if (mostSimilarUsers.size() >= centeredSimilarity.size() * 0.2) {
-            return calculateFinalCarRatingValue(mostSimilarUsers);
-        } else {
-            similarityDistance = similarityDistance + 0.2;
-            getMostSimilarUsers();
-        }
-        return 1;
+        return calculateFinalCarRatingValue(mostSimilarUsers, userModel);
+
     }
 
-    private double calculateFinalCarRatingValue(List<String> mostSimilarUsers) {
+    private double calculateFinalCarRatingValue(List<Long> mostSimilarUsers, UserModel userModel) {
         double ratingSum = 0;
         double numberOfRatings = 0;
         double mediaAritmetica;
-        List<CommentModel> mostSimmilarComments = usersRatings.stream()
-                .filter(e -> mostSimilarUsers.stream().anyMatch(name -> name.equals(e.getAuthorEmail())))
-                .collect(Collectors.toList());
+        List<CommentModel> mostSimmilarComments = commentService.getAllUserComentsByIds(userModel.getEmail(), mostSimilarUsers);
 
+        if (mostSimmilarComments.size() == 0) {
+            return 1;
+        }
         for (CommentModel comment : mostSimmilarComments) {
-            ratingSum = ratingSum + centeredSimilarity.get(comment.getAuthorEmail()) * comment.getRating();
-            numberOfRatings = centeredSimilarity.get(comment.getAuthorEmail()) + numberOfRatings;
+            ratingSum = ratingSum + centeredSimilarity.get(comment.getCarId()) * comment.getRating();
+            numberOfRatings = centeredSimilarity.get(comment.getCarId()) + numberOfRatings;
         }
         return ratingSum / numberOfRatings;
     }

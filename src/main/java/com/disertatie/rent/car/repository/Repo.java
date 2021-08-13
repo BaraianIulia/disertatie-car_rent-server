@@ -11,6 +11,8 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,13 +29,14 @@ public class Repo {
 
         StringBuilder query = new StringBuilder();
         query.append("SELECT * FROM cars AS c ");
-//        if(carQuizzModel.getStartDate()!= null || carQuizzModel.getEndDate()!= null){
+//        if(carQuizzModel.getStartDate()!= null && carQuizzModel.getEndDate()!= null){
 //            query.append("LEFT JOIN rent_details AS rd ON c.car_id = rd.car_id ");
 //        }
         query.append("WHERE ");
-//        if(carQuizzModel.getStartDate() != null){
-//            LocalDate date = carQuizzModel.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-//            query.append("'"+date + "' NOT BETWEEN rd.start_date AND rd.end_date ");
+//        if(carQuizzModel.getStartDate() != null && carQuizzModel.getEndDate() != null){
+//            LocalDate startDate = carQuizzModel.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//            LocalDate endDate = carQuizzModel.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//            query.append("(rd.rent_detail_id is null or (('"+endDate +"' < rd.start_date and '"+startDate+"' < rd.start_date) AND (rd.end_date < '"+startDate+"' and rd.end_date < '"+endDate+"'))) ");
 //            if(CollectionUtils.isNotEmpty(carQuizzModel.getBrand()) || carQuizzModel.getFabricationYear() != null || carQuizzModel.getPricePerDay() != null || carQuizzModel.getHorsePower() != null || carQuizzModel.getSeats() != null){
 //                query.append("AND ");
 //            }

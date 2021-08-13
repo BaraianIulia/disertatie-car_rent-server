@@ -40,9 +40,11 @@ public class CarServiceImp implements CarService {
     @Override
     public List<CarModel> getAllCars(LocalDate startDate, LocalDate endDate) {
         List<CarModel> carListModel = new ArrayList<>();
-        List<Car> carList = carRepository.findAll();
+        List<Car> carList = new ArrayList<>();
         if (startDate != null && endDate != null) {
-           carList = carList.stream().filter(x -> checkCarForAvailability(x.getId(), startDate, endDate) == true).collect(Collectors.toList());
+           carList = carRepository.getAllNotBetweenDates(startDate, endDate);
+        }else{
+            carList =carRepository.findAll();
         }
         for (Car car : carList) {
             carListModel.add(transformer.transformEntityToModel(car));
@@ -137,6 +139,8 @@ public class CarServiceImp implements CarService {
 //            carListModel.add(transformer.transformEntityToModel(car));
 //        }
         return recommender.getRecommendation(userId, carQuizzModel);
+        //recommender.calculateSimilarity();
+       // return new ArrayList<>();
     }
 
     @Override
